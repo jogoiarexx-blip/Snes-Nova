@@ -1,47 +1,25 @@
-# SNES Nova v0.5.0
+# SNES Nova v0.6.0
 
-Emulador web de Super Nintendo com biblioteca integrada e seleção inteligente entre Snes9x e bsnes.
+Emulador web de SNES baseado em EmulatorJS/Snes9x/bsnes.
 
-## Novidades v0.5.0
-
-- Benchmark real do navegador salvo localmente.
-- Perfis aprendidos por jogo: core, perfil gráfico, proporção, filtro e overscan.
-- Seleção automática Snes9x/bsnes combinando ROM + hardware + benchmark + perfil aprendido.
-- Snes9x usa o canal estável do EmulatorJS; bsnes usa o canal nightly quando o runtime local não está instalado, pois é onde o core está disponível atualmente no CDN público.
-- Detecção automática de runtime local em `vendor/emulatorjs/data/`.
-- Proporções 4:3, 8:7 e esticada.
-- Recorte opcional de overscan.
-- Filtros Pixel, CRT, Suavizado e Vivo.
-- WebGL2 preferido e fallback WebGL1.
-- Threads WASM apenas quando `crossOriginIsolated`/SharedArrayBuffer estão realmente disponíveis.
-- Cache do EmulatorJS habilitado e PWA atualizado.
+## Novidades v0.6.0
+- Biblioteca persistente em IndexedDB: ROM adicionada uma vez e jogável depois sem selecionar novamente.
+- Identificação de ROM por CRC32 e SHA-1.
+- Favoritos, busca, ordenação, detalhes, tempo jogado e sessões.
+- Diagnóstico de chip conhecido (Super FX/SA-1/CX4/DSP por base de compatibilidade) e perfis por jogo.
+- Monitor de estabilidade da sessão e recomendação de fallback bsnes -> Snes9x.
+- Menu rápido próprio (F1) com quick save/load, fullscreen, configurações e biblioteca.
+- Modo TV com controles maiores e atalho Start+Select para abrir o menu.
+- Painel P1/P2 com detecção de múltiplos gamepads.
+- Save Manager com quick save/load e backup dos dados do app.
+- Brilho, contraste, saturação e intensidade de scanlines ajustáveis em tempo real.
+- Aviso de atualização do PWA e cache versionado.
 - Doom e Final Fight continuam integrados.
 
-## Runtime local
+## GitHub Pages
+Extraia o conteúdo desta pasta na raiz do repositório e habilite Settings > Pages > Deploy from branch. WebGL/PWA funcionam normalmente. Threads WASM dependem de COOP/COEP e geralmente ficam indisponíveis no GitHub Pages; o app faz fallback automático.
 
-O aplicativo procura primeiro por:
+## Runtime
+O projeto tenta `vendor/emulatorjs/data/` primeiro. Se não existir, usa a CDN do EmulatorJS. Para funcionamento 100% offline, copie a distribuição completa do EmulatorJS para essa pasta.
 
-`vendor/emulatorjs/data/loader.js`
-
-Se essa pasta existir com uma distribuição compatível do EmulatorJS, usa os arquivos locais. Caso contrário, usa CDN + cache do navegador.
-
-Para um pacote 100% offline, copie uma distribuição oficial completa do diretório `data/` do EmulatorJS para `vendor/emulatorjs/data/`, incluindo os cores desejados.
-
-## Threads WASM
-
-Threads exigem os headers HTTP:
-
-- `Cross-Origin-Opener-Policy: same-origin`
-- `Cross-Origin-Embedder-Policy: require-corp`
-
-Sem eles o SNES Nova desativa threads automaticamente e continua funcionando.
-
-## Execução
-
-Use HTTP/HTTPS. Não abra por `file://`.
-
-Exemplo local:
-
-`python -m http.server 8080`
-
-Depois abra `http://localhost:8080`.
+ROMs comerciais de terceiros devem ser usadas apenas quando o usuário tiver direito de utilizá-las.

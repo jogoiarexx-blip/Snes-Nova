@@ -17,7 +17,7 @@
         <div class="brand-mark" aria-hidden="true">N</div>
         <div>
           <strong>SNES Nova</strong>
-          <span>v0.5.0 • Super Nintendo • Smart Performance</span>
+          <span>v0.6.0 • Super Nintendo • Smart Performance</span>
         </div>
       </div>
       <div class="top-actions">
@@ -142,6 +142,11 @@
           <div id="bundledGames" class="bundled-grid"></div>
         </section>
 
+        <section class="smart-library">
+          <div class="section-head"><div><p class="eyebrow">BIBLIOTECA INTELIGENTE</p><h2>Suas ROMs salvas no navegador</h2></div><small id="storageInfo">Calculando armazenamento…</small></div>
+          <div class="advanced-strip"><input id="librarySearch" type="search" placeholder="Buscar jogo…"><select id="librarySort"><option value="recent">Mais recentes</option><option value="name">Nome A–Z</option><option value="favorite">Favoritos primeiro</option></select><label class="primary-btn" for="romInput">+ Adicionar ROM</label></div>
+          <div id="smartLibraryGrid" class="smart-library-grid"></div>
+        </section>
         <section class="recent-section">
           <div class="section-head">
             <div><p class="eyebrow">BIBLIOTECA LOCAL</p><h2>Jogos recentes</h2></div>
@@ -156,12 +161,12 @@
           <button id="backBtn" class="ghost-btn">← Biblioteca</button>
           <div class="now-playing"><small>JOGANDO</small><strong id="playingTitle">—</strong><span id="playingCore">Core automático</span></div>
           <div class="player-tools">
-            <button id="fullscreenHostBtn" class="ghost-btn">Tela cheia</button>
+            <button id="quickMenuBtn" class="primary-btn">Menu rápido</button><button id="fullscreenHostBtn" class="ghost-btn">Tela cheia</button>
             <button id="reloadBtn" class="ghost-btn">Reiniciar interface</button>
           </div>
         </div>
-        <div class="video-toolbar">
-          <span id="runtimeVideoStatus">Vídeo automático</span>
+        <div class="perf-warning" id="perfWarning" hidden><span>O bsnes apresentou instabilidade nesta sessão.</span><button id="perfUseSnes9x" class="secondary-btn compact">Trocar para Snes9x</button></div><div class="video-toolbar">
+          <span id="runtimeVideoStatus">Vídeo automático</span><span id="sessionPerf" class="perf-pill">Sessão: aguardando dados</span>
           <div>
             <button class="mini-btn" data-scale="2">2×</button>
             <button class="mini-btn" data-scale="3">3×</button>
@@ -182,6 +187,11 @@
 
   <input id="romInput" type="file" accept=".sfc,.smc,.fig,.zip,application/zip" hidden />
 
+  <div id="quickMenu" class="quick-menu" hidden><div class="quick-card"><button id="qmClose" class="icon-btn" style="float:right">×</button><small>SNES NOVA</small><h2>Menu rápido</h2><p>F1 ou Start + Select no modo TV.</p><div class="quick-actions"><button id="qmResume" class="primary-btn">Continuar</button><button id="qmSave" class="secondary-btn">Quick Save (F2)</button><button id="qmLoad" class="secondary-btn">Quick Load (F4)</button><button id="qmFullscreen" class="ghost-btn">Tela cheia</button><button id="qmSettings" class="ghost-btn">Configurações</button><button id="qmRestart" class="ghost-btn">Reiniciar</button><button id="qmLibrary" class="danger-btn">Voltar à biblioteca</button></div></div></div>
+  <dialog id="gameDetailsDialog" class="dialog"><form method="dialog"><div class="dialog-head"><div><small>JOGO</small><h2 id="detailTitle">Detalhes</h2></div><button class="icon-btn">×</button></div><div id="detailBody"></div></form></dialog>
+  <dialog id="controlsDialog" class="dialog"><form method="dialog"><div class="dialog-head"><div><small>CONTROLES</small><h2>Jogadores P1/P2</h2></div><button class="icon-btn">×</button></div><div id="controllerList"></div><p class="dialog-note">O SNES Nova detecta até múltiplos gamepads; o remapeamento detalhado permanece no painel de controles do EmulatorJS para manter compatibilidade com todos os cores.</p></form></dialog>
+  <dialog id="saveManagerDialog" class="dialog"><form method="dialog"><div class="dialog-head"><div><small>PROGRESSO</small><h2>Save Manager</h2></div><button class="icon-btn">×</button></div><div class="quick-actions"><button id="quickSave2" type="button" class="primary-btn">Quick Save</button><button id="quickLoad2" type="button" class="secondary-btn">Quick Load</button><button id="exportAppData" type="button" class="ghost-btn">Exportar backup do app</button></div><p class="dialog-note">SRAM e save states continuam armazenados pelo EmulatorJS no navegador. O backup exporta biblioteca, hashes, perfis e estatísticas do SNES Nova; saves do core podem ser exportados pelo botão de arquivos .sav do próprio emulador.</p></form></dialog>
+  <div id="updateNotice" class="update-notice" hidden>Nova versão do app disponível. <button id="reloadUpdate" class="primary-btn compact">Atualizar</button></div>
   <dialog id="settingsDialog" class="dialog">
     <form method="dialog">
       <div class="dialog-head"><div><small>PREFERÊNCIAS</small><h2>SNES Nova</h2></div><button value="cancel" class="icon-btn">×</button></div>
@@ -194,11 +204,12 @@
         <select id="captureScaleSelect"><option value="1">1×</option><option value="2">2×</option><option value="3">3×</option><option value="4">4×</option></select>
       </label>
       <label class="switch-row"><span>Confirmar antes de sair</span><input id="confirmExitToggle" type="checkbox" checked><i></i></label>
-      <p class="dialog-note">O mapeamento detalhado de teclado/gamepad, cheats e slots de state continuam no painel do próprio EmulatorJS. O SNES Nova agora aprende um perfil por jogo e combina isso com benchmark do dispositivo.</p>
+      <div class="panel-title"><span>Ajuste fino de vídeo</span><small>em tempo real</small></div><div class="color-lab"><label>Brilho<input id="brightnessRange" type="range" min="0.7" max="1.35" step="0.05" value="1"></label><label>Contraste<input id="contrastRange" type="range" min="0.7" max="1.5" step="0.05" value="1"></label><label>Saturação<input id="saturationRange" type="range" min="0" max="1.8" step="0.05" value="1"></label><label>Scanlines<input id="scanlineRange" type="range" min="0" max="0.5" step="0.05" value="0"></label></div><p class="dialog-note">O mapeamento detalhado de teclado/gamepad, cheats e slots de state continuam no painel do próprio EmulatorJS. O SNES Nova agora aprende um perfil por jogo e combina isso com benchmark do dispositivo.</p>
       <div class="dialog-actions"><button value="cancel" class="secondary-btn">Fechar</button><button id="savePrefsBtn" value="default" class="primary-btn">Salvar</button></div>
     </form>
   </dialog>
 
   <script src="assets/js/app.js"></script>
+  <script src="assets/js/advanced.js"></script>
 </body>
 </html>
