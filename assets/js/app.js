@@ -266,9 +266,9 @@
 
 
   const BUNDLED_GAMES = [
-    { id: 'doom-1995', title: 'Doom', subtitle: 'Williams • 1995', file: 'games/doom-1995.sfc', size: 2097152, badge: 'Super FX', preferred: 'bsnes' },
-    { id: 'final-fight', title: 'Final Fight', subtitle: 'Capcom', file: 'games/final-fight.sfc', size: 1048576, badge: 'Beat em up', preferred: 'snes9x' },
-    { id: 'final-fight-3', title: 'Final Fight 3', subtitle: 'Capcom • 1995', file: 'games/final-fight-3.sfc', size: 3145728, badge: 'Beat em up', preferred: 'snes9x' }
+    { id: 'doom-1995', title: 'Doom', subtitle: 'Williams • 1995', file: './games/doom-1995.sfc', size: 2097152, badge: 'Super FX', preferred: 'bsnes' },
+    { id: 'final-fight', title: 'Final Fight', subtitle: 'Capcom', file: './games/final-fight.sfc', size: 1048576, badge: 'Beat em up', preferred: 'snes9x' },
+    { id: 'final-fight-3', title: 'Final Fight 3', subtitle: 'Capcom • 1995', file: './games/final-fight-3.sfc', size: 3145728, badge: 'Beat em up', preferred: 'snes9x' }
   ];
 
   const ACCURACY_GAME_HINTS = [
@@ -439,20 +439,49 @@
     bundledGames.querySelectorAll('.play-bundled').forEach(btn => btn.addEventListener('click', () => bootBundledGame(btn.dataset.id)));
   }
 
+  function appBaseUrl() {
+    // Works at a user root (user.github.io/) and at a project subpath (user.github.io/repo/).
+    return new URL('./', document.baseURI || window.location.href);
+  }
+
+  async function fetchBundledGame(game) {
+    const candidates = [];
+    const add = (u) => { if (u && !candidates.includes(u)) candidates.push(u); };
+    add(new URL(game.file.replace(/^\.\//,''), appBaseUrl()).href);
+    // Fallback for hosts that rewrite index.html but keep the app under the current pathname.
+    try { add(new URL(game.file, window.location.href).href); } catch {}
+    let lastError = null;
+    for (const url of candidates) {
+      try {
+        const response = await fetch(url, { cache: 'no-store', credentials: 'same-origin' });
+        if (!response.ok) { lastError = new Error(`ROM HTTP ${response.status} em ${url}`); continue; }
+        const blob = await response.blob();
+        if (!blob.size) { lastError = new Error(`ROM vazia em ${url}`); continue; }
+        return { blob, url };
+      } catch (err) { lastError = err; }
+    }
+    throw lastError || new Error('A ROM instalada não pôde ser localizada.');
+  }
+
   async function bootBundledGame(id) {
     const game = BUNDLED_GAMES.find(g => g.id === id);
     if (!game) return;
     const btn = bundledGames?.querySelector(`[data-id="${id}"] .play-bundled`);
     if (btn) { btn.disabled = true; btn.textContent = 'Carregando...'; }
+    let phase = 'localizar a ROM';
     try {
-      const response = await fetch(game.file);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const blob = await response.blob();
-      const file = new File([blob], game.file.split('/').pop(), { type: 'application/octet-stream' });
+      const loaded = await fetchBundledGame(game);
+      phase = 'preparar a ROM';
+      const file = new File([loaded.blob], game.file.split('/').pop(), { type: 'application/octet-stream', lastModified: Date.now() });
+      phase = 'inicializar o emulador';
       await bootRom(file, game);
     } catch (err) {
-      alert('Não foi possível abrir o jogo instalado. Execute o projeto por HTTP/HTTPS (por exemplo, GitHub Pages).');
-      console.error(err);
+      window.__SNESNovaLastBootError = { game: game.title, phase, message: String(err?.message || err), at: new Date().toISOString() };
+      console.error('SNES Nova boot instalado:', window.__SNESNovaLastBootError, err);
+      const msg = phase === 'localizar a ROM'
+        ? `Não foi possível localizar a ROM de ${game.title} no site.\n\nVerifique se o arquivo ${game.file.replace(/^\.\//,'')} foi enviado ao GitHub.`
+        : `A ROM de ${game.title} foi encontrada, mas ocorreu um erro ao ${phase}.\n\nErro: ${String(err?.message || err)}\n\nUse o botão Diagnóstico para ver os detalhes.`;
+      alert(msg);
     } finally {
       if (btn) { btn.disabled = false; btn.textContent = 'Jogar agora'; }
     }
@@ -492,20 +521,24 @@
   }
 
   async function bootRom(file, bundledGame = null) {
+    window.__SNESNovaBootPhase = 'validar ROM';
     if (!validateRom(file)) {
       alert('Formato não suportado. Use uma ROM .sfc, .smc, .fig ou .zip.');
       return;
     }
 
+    window.__SNESNovaBootPhase = 'carregar preferências';
     const prefs = savePrefs();
     const caps = updateHardwarePanel();
     if (prefs.autoBenchmark && !getBenchmark()) await runDeviceBenchmark(false);
     let resolvedGraphics = resolveGraphicsProfile(prefs.graphics, caps);
     if (prefs.graphics === 'auto' && window.SNESNova?.mobile?.resolveGraphics) resolvedGraphics = window.SNESNova.mobile.resolveGraphics(resolvedGraphics);
+    window.__SNESNovaBootPhase = 'analisar ROM';
     const romInfo = await inspectRom(file);
     const profileKey = makeGameProfileKey(file, romInfo, bundledGame);
     window.__SNESNovaRomRegion = romInfo?.analysis?.region || romInfo?.header?.region || '';
     const learnedProfile = prefs.gameProfiles ? getGameProfiles()[profileKey] : null;
+    window.__SNESNovaBootPhase = 'consultar compatibilidade';
     const compatibility = window.SNESNova?.compatibility ? await window.SNESNova.compatibility.lookup(romInfo.analysis || romInfo) : null;
     let smartDecision = prefs.core === 'auto'
       ? chooseSmartCore(file, romInfo, learnedProfile)
@@ -530,6 +563,7 @@
       }
     }
     const engineHash = romInfo.sha1 || romInfo.crc32 || profileKey;
+    window.__SNESNovaBootPhase = 'preparar engine';
     const enginePrep = await window.SNESNova?.engine?.prepareBoot?.({core:selectedCore,romHash:engineHash});
     if (prefs.core === 'auto' && enginePrep?.profile?.core && enginePrep.profile.core !== selectedCore) {
       selectedCore = enginePrep.profile.core;
@@ -551,6 +585,7 @@
     $('#game').innerHTML = '';
     applyDisplayScale(prefs.resolution, prefs.sharp, resolvedGraphics);
     applyVideoPresentation(prefs, resolvedGraphics);
+    window.__SNESNovaBootPhase = 'detectar runtime';
     const runtime = await detectRuntimeSource(selectedCore);
     const runtimeSource = runtime.source;
     const dataPath = runtime.dataPath;
@@ -617,6 +652,7 @@
       if (selectedCore === 'bsnes') alert('O runtime bsnes não pôde ser carregado. Execute o instalador de runtime ou deixe o fallback online disponível.');
       else alert('Não foi possível carregar o Snes9x. Execute o instalador de runtime ou verifique a conexão.');
     };
+    window.__SNESNovaBootPhase = 'carregar loader do core';
     document.body.appendChild(script);
   }
 
@@ -624,7 +660,7 @@
     window.SNESNova?.session?.stop('library');
     playerView.hidden = true;
     launcherView.hidden = false;
-    document.title = 'SNES Nova 1.0.2';
+    document.title = 'SNES Nova 1.0.4';
     $('#game').innerHTML = '';
     // Full core teardown is owned by EmulatorJS exit button. Reload offers a guaranteed clean boot.
   }

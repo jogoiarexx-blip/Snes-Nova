@@ -7,8 +7,8 @@
   <meta name="description" content="SNES Nova - emulador de Super Nintendo no navegador com seleção inteligente entre Snes9x e bsnes." />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="assets/css/app.css" />
-  <title>SNES Nova 1.0.2</title>
+  <link rel="stylesheet" href="assets/css/app.css?v=1.0.4" />
+  <title>SNES Nova 1.0.4</title>
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
 </head>
 <body>
@@ -19,7 +19,7 @@
         <div class="brand-mark" aria-hidden="true">N</div>
         <div>
           <strong>SNES Nova</strong>
-          <span>v1.0.2 • Super Nintendo • Smart Performance</span>
+          <span>v1.0.4 • Super Nintendo • Smart Performance</span>
         </div>
       </div>
       <div class="top-actions">
@@ -142,7 +142,7 @@
         <section class="bundled-section">
           <div class="section-head">
             <div><p class="eyebrow">JÁ INSTALADOS</p><h2>Biblioteca SNES Nova</h2></div>
-            <small class="library-note">2 jogos disponíveis</small>
+            <small class="library-note">3 jogos disponíveis</small>
           </div>
           <div id="bundledGames" class="bundled-grid"></div>
         </section>
@@ -221,7 +221,7 @@
       <label class="switch-row"><span>Confirmar antes de sair</span><input id="confirmExitToggle" type="checkbox" checked><i></i></label>
       <label class="switch-row"><span>Controles touch no celular</span><input id="touchToggle" type="checkbox" checked><i></i></label>
       <div class="mobile-settings" id="mobileSettings">
-        <div class="panel-title"><span>Mobile</span><small>v1.0.2</small></div>
+        <div class="panel-title"><span>Mobile</span><small>v1.0.4</small></div>
         <label class="field">Perfil mobile<select id="mobileProfileSelect"><option value="auto">Automático</option><option value="battery">Economia de bateria</option><option value="balanced">Equilibrado</option><option value="quality">Qualidade</option></select></label>
         <label class="field">Tamanho dos controles<select id="touchScaleSelect"><option value="0.78">78%</option><option value="0.9">90%</option><option value="1">100%</option><option value="1.12">112%</option><option value="1.25">125%</option></select></label>
         <label class="field">Opacidade dos controles<input id="touchOpacityRange" type="range" min="0.3" max="1" step="0.05" value="0.72"></label>
@@ -234,28 +234,28 @@
     </form>
   </dialog>
 
-  <script src="assets/js/engine/workers/worker-manager.js"></script>
-  <script src="assets/js/engine/core/core-manager.js"></script>
-  <script src="assets/js/engine/performance/adaptive-engine.js"></script>
-  <script src="assets/js/engine/engine-manager.js"></script>
-  <script src="assets/js/engine/video/video-engine.js"></script>
-  <script src="assets/js/engine/video/gpu-presenter.js"></script>
-  <script src="assets/js/engine/audio/adaptive-audio.js"></script>
-  <script src="assets/js/engine/input/low-latency-input.js"></script>
-  <script src="assets/js/modules/logger.js"></script>
-  <script src="assets/js/modules/zip-reader.js"></script>
-  <script src="assets/js/modules/rom-analyzer.js"></script>
-  <script src="assets/js/modules/compatibility.js"></script>
-  <script src="assets/js/modules/session-manager.js"></script>
-  <script src="assets/js/modules/patches.js"></script>
-  <script src="assets/js/modules/diagnostics.js"></script>
-  <script src="assets/js/modules/enhancements.js"></script>
-  <script src="assets/js/engine/workers/offload.js"></script>
-  <script src="assets/js/app.js"></script>
-  <script src="assets/js/advanced.js"></script>
-  <script src="assets/js/v090.js"></script>
-  <script src="assets/js/v091.js"></script>
-  <script src="assets/js/v100.js"></script>
-  <script src="assets/js/v102.js"></script>
+  <script src="assets/js/engine/workers/worker-manager.js?v=1.0.4"></script>
+  <script src="assets/js/engine/core/core-manager.js?v=1.0.4"></script>
+  <script src="assets/js/engine/performance/adaptive-engine.js?v=1.0.4"></script>
+  <script src="assets/js/engine/engine-manager.js?v=1.0.4"></script>
+  <script src="assets/js/engine/video/video-engine.js?v=1.0.4"></script>
+  <script src="assets/js/engine/video/gpu-presenter.js?v=1.0.4"></script>
+  <script src="assets/js/engine/audio/adaptive-audio.js?v=1.0.4"></script>
+  <script src="assets/js/engine/input/low-latency-input.js?v=1.0.4"></script>
+  <script src="assets/js/modules/logger.js?v=1.0.4"></script>
+  <script src="assets/js/modules/zip-reader.js?v=1.0.4"></script>
+  <script src="assets/js/modules/rom-analyzer.js?v=1.0.4"></script>
+  <script src="assets/js/modules/compatibility.js?v=1.0.4"></script>
+  <script src="assets/js/modules/session-manager.js?v=1.0.4"></script>
+  <script src="assets/js/modules/patches.js?v=1.0.4"></script>
+  <script src="assets/js/modules/diagnostics.js?v=1.0.4"></script>
+  <script src="assets/js/modules/enhancements.js?v=1.0.4"></script>
+  <script src="assets/js/engine/workers/offload.js?v=1.0.4"></script>
+  <script src="assets/js/app.js?v=1.0.4"></script>
+  <script src="assets/js/advanced.js?v=1.0.4"></script>
+  <script src="assets/js/v090.js?v=1.0.4"></script>
+  <script src="assets/js/v091.js?v=1.0.4"></script>
+  <script src="assets/js/v100.js?v=1.0.4"></script>
+  <script src="assets/js/v102.js?v=1.0.4"></script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 {
   "name": "SNES Nova",
   "short_name": "SNES Nova",
-  "description": "SNES Nova 1.0.2 — emulador SNES com biblioteca, core inteligente, modo TV, touch, patches e diagnóstico.",
+  "description": "SNES Nova 1.0.4 — emulador SNES com biblioteca, core inteligente, modo TV, touch, patches e diagnóstico.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

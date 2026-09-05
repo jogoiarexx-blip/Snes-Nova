@@ -17,7 +17,7 @@ html=(r/'index.html').read_text(encoding='utf-8')
 for src in re.findall(r'<script[^>]+src="([^"]+)"',html):
  if src.startswith(('http://','https://')): continue
  assert (r/src).exists(), f'missing script: {src}'
-assert 'SNES Nova 1.0.2' in html
+assert 'SNES Nova 1.0.4' in html
 assert (r/'ENGINE.md').exists()
 assert (r/'scripts/core-build/build-custom-cores.sh').exists()
 print('smoke ok')

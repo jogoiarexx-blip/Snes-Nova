@@ -87,3 +87,4 @@ body.mobile-battery .player-stage{--sn-scanlines:0!important;filter:brightness(v
 @media(prefers-reduced-motion:reduce){.touch-controls button,.rotate-notice{transition:none!important}}
 
 @media(max-width:650px),(pointer:coarse){.player-tools{display:flex!important;gap:6px}.player-tools #reloadBtn,.player-tools #fullscreenHostBtn{display:none}.player-tools .primary-btn,.player-tools .ghost-btn{padding:8px 10px;font-size:11px}}
+.cover-final-fight-3{background:radial-gradient(circle at 75% 20%,#b84e35 0,transparent 30%),radial-gradient(circle at 25% 70%,#203f72 0,transparent 35%),linear-gradient(160deg,#111827,#6d2934 54%,#0d1119)}
