@@ -168,6 +168,9 @@
 
   async function detectRuntimeSource(core = 'snes9x') {
     const out = $('#runtimeSource');
+    const build = window.SNESNova?.engine?.recommendedBuild?.(core) || 'standard';
+    const customPath = `./vendor/custom-cores/${core}/${build}/data/`;
+    try { const cr = await fetch(`${customPath}loader.js`, { method:'HEAD', cache:'no-store' }); if (cr.ok) { if(out) out.textContent = `Local • ${core} custom ${build}`; return {source:'custom',dataPath:customPath,build}; } } catch {}
     const localPath = core === 'bsnes' ? LOCAL_BSNES_DATA : LOCAL_STABLE_DATA;
     try {
       const r = await fetch(`${localPath}loader.js`, { method: 'HEAD', cache: 'no-store' });
@@ -264,7 +267,8 @@
 
   const BUNDLED_GAMES = [
     { id: 'doom-1995', title: 'Doom', subtitle: 'Williams • 1995', file: 'games/doom-1995.sfc', size: 2097152, badge: 'Super FX', preferred: 'bsnes' },
-    { id: 'final-fight', title: 'Final Fight', subtitle: 'Capcom', file: 'games/final-fight.sfc', size: 1048576, badge: 'Beat em up', preferred: 'snes9x' }
+    { id: 'final-fight', title: 'Final Fight', subtitle: 'Capcom', file: 'games/final-fight.sfc', size: 1048576, badge: 'Beat em up', preferred: 'snes9x' },
+    { id: 'final-fight-3', title: 'Final Fight 3', subtitle: 'Capcom • 1995', file: 'games/final-fight-3.sfc', size: 3145728, badge: 'Beat em up', preferred: 'snes9x' }
   ];
 
   const ACCURACY_GAME_HINTS = [
@@ -496,7 +500,8 @@
     const prefs = savePrefs();
     const caps = updateHardwarePanel();
     if (prefs.autoBenchmark && !getBenchmark()) await runDeviceBenchmark(false);
-    const resolvedGraphics = resolveGraphicsProfile(prefs.graphics, caps);
+    let resolvedGraphics = resolveGraphicsProfile(prefs.graphics, caps);
+    if (prefs.graphics === 'auto' && window.SNESNova?.mobile?.resolveGraphics) resolvedGraphics = window.SNESNova.mobile.resolveGraphics(resolvedGraphics);
     const romInfo = await inspectRom(file);
     const profileKey = makeGameProfileKey(file, romInfo, bundledGame);
     window.__SNESNovaRomRegion = romInfo?.analysis?.region || romInfo?.header?.region || '';
@@ -516,7 +521,20 @@
       if (rec === 'bsnes' && !hwNow.weak && getBenchmark()?.tier !== 'low') smartDecision = { core:'bsnes', reasons:['banco de compatibilidade por CRC32/SHA-1', compatibility.notes || 'perfil de precisão recomendado'], hw:hwNow, accuracyHint:true, database:true };
       else if (rec === 'snes9x' || compatibility.fallbackCore === 'snes9x') smartDecision = { core:'snes9x', reasons:['banco de compatibilidade por CRC32/SHA-1', compatibility.notes || 'perfil de desempenho recomendado'], hw:hwNow, accuracyHint:false, database:true };
     }
-    const selectedCore = smartDecision.core;
+    let selectedCore = smartDecision.core;
+    if (prefs.core === 'auto' && window.SNESNova?.mobile?.resolveCore) {
+      const mobileCore = window.SNESNova.mobile.resolveCore(selectedCore, {romInfo, compatibility, bundledGame});
+      if (mobileCore && mobileCore !== selectedCore) {
+        selectedCore = mobileCore;
+        smartDecision = {...smartDecision, core:selectedCore, reasons:[...(smartDecision.reasons||[]), 'perfil Mobile Auto priorizou estabilidade/consumo']};
+      }
+    }
+    const engineHash = romInfo.sha1 || romInfo.crc32 || profileKey;
+    const enginePrep = await window.SNESNova?.engine?.prepareBoot?.({core:selectedCore,romHash:engineHash});
+    if (prefs.core === 'auto' && enginePrep?.profile?.core && enginePrep.profile.core !== selectedCore) {
+      selectedCore = enginePrep.profile.core;
+      smartDecision = {...smartDecision, core:selectedCore, reasons:[...(smartDecision.reasons||[]), 'perfil adaptativo por jogo + dispositivo']};
+    }
     window.SNESNova?.session?.begin({title: bundledGame?.title || safeTitle(file.name), hash: romInfo.sha1 || romInfo.crc32 || profileKey, core:selectedCore});
     addRecent(file);
     if (activeRomUrl) URL.revokeObjectURL(activeRomUrl);
@@ -572,7 +590,7 @@
       loadSavFiles: true, quickSave: true, quickLoad: true, screenshot: true,
       cacheManager: true, exitEmulation: true
     };
-    window.EJS_onExit = () => showLibrary();
+    window.EJS_onExit = async () => { await window.SNESNova?.session?.stop?.('ejs-exit'); showLibrary(); };
     window.EJS_onGameStart = () => {
       document.title = `${title} • SNES Nova`;
       window.SNESNova?.session?.started();
@@ -606,7 +624,7 @@
     window.SNESNova?.session?.stop('library');
     playerView.hidden = true;
     launcherView.hidden = false;
-    document.title = 'SNES Nova 0.9.1';
+    document.title = 'SNES Nova 1.0.2';
     $('#game').innerHTML = '';
     // Full core teardown is owned by EmulatorJS exit button. Reload offers a guaranteed clean boot.
   }

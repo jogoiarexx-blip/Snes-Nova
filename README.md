@@ -1,8 +1,18 @@
-# SNES Nova v0.9.1
+# SNES Nova v1.0.2
 
 Frontend web/PWA para emulação SNES baseado em EmulatorJS.
 
-## Destaques v0.9.1
+
+## Jogo integrado na v1.0.2
+
+- Final Fight 3 (Capcom, 1995)
+- ROM normalizada sem copier header de 512 bytes
+- CRC32: `8E6F0065`
+- SHA-1: `A88AFD142CE4683DF2A5B2B1A06EAEA698E114F9`
+- SHA-256: `F388115A96DCA534B8D7BA2B9A26E6C3C43877BCB8AF27C76C37C851EEB294AD`
+- Core recomendado: `snes9x`
+
+## Destaques v1.0.2
 - Biblioteca IndexedDB com análise SHA-1/CRC32 e ROMs ZIP extraídas em memória.
 - Top 10 de clássicos com associação da ROM do próprio usuário (ROMs comerciais não são distribuídas).
 - Doom e Final Fight continuam integrados conforme arquivos fornecidos ao projeto.
@@ -26,7 +36,7 @@ Não inclua ROMs comerciais sem autorização. O Top 10 serve como catálogo e p
 
 ## Runtime local / GitHub Pages
 
-A v0.9.1 separa os runtimes para evitar misturar cores incompatíveis:
+A v1.0.2 separa os runtimes para evitar misturar cores incompatíveis:
 
 - Snes9x: EmulatorJS 4.2.3 estável.
 - bsnes: runtime EmulatorJS 4.3.0-pre compatível com o core bsnes.
@@ -40,3 +50,26 @@ powershell -ExecutionPolicy Bypass -File scripts/install-runtime.ps1
 ```
 
 O arquivo `vendor/emulatorjs/runtime-manifest.json` é gerado pelo instalador com tamanho e SHA-256 de cada arquivo baixado.
+
+
+## SNES Nova Engine v1
+
+A versão 1.0.2 adiciona uma camada de engine própria acima do EmulatorJS e dos cores Snes9x/bsnes. Ela detecta WASM SIMD, WebGL2, threads, Workers, OffscreenCanvas e AudioWorklet; cria um perfil de hardware não identificável; aprende o core por jogo+dispositivo; pré-carrega o runtime em idle; move hashing, ZIP e patches para Web Workers quando possível; oferece pós-processamento WebGL2 real; sincroniza o polling de gamepad com `requestAnimationFrame`; e prepara caminhos para builds WebAssembly customizados.
+
+### Builds customizados
+
+`scripts/core-build/build-custom-cores.sh` exige Emscripten (`emcc`) e commits upstream explicitamente fixados em `scripts/core-build/core-lock.env`. Sem um build aprovado, a engine continua usando os runtimes locais versionados Snes9x/bsnes já suportados pelo projeto.
+
+### Pós-processamento GPU
+
+Em hardware forte, a opção **Pós-processamento WebGL2** pode espelhar o framebuffer do core para um segundo canvas WebGL2 e aplicar brilho, contraste, saturação, gamma e scanlines na GPU. Em hardware classificado como fraco, fica desligada por padrão para não duplicar trabalho gráfico.
+
+## Mobile v1.0.2
+
+- Modo Jogo com fullscreen/landscape quando o navegador permite.
+- Safe Area para iPhone/iPad e layout com `100dvh`.
+- Controles touch com multitouch por `pointerId`, tamanho/opacidade configuráveis e vibração opcional.
+- Perfil Mobile Auto (bateria/equilibrado/qualidade) e proteção de desempenho sustentado.
+- Oculta controles touch quando um gamepad é conectado, opcionalmente.
+- Perfil bateria desativa pós-processamento extra e prioriza Snes9x no modo automático.
+- A proteção térmica é inferida por degradação sustentada de FPS/stutter; navegadores não expõem temperatura física do aparelho.

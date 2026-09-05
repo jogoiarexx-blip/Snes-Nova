@@ -22,6 +22,17 @@
       "aspect": "4-3",
       "filter": "pixel",
       "notes": "Não exige coprocessador especial; Snes9x oferece ótimo desempenho."
+    },
+    "8E6F0065": {
+      "title": "Final Fight 3",
+      "sha1": "A88AFD142CE4683DF2A5B2B1A06EAEA698E114F9",
+      "recommendedCore": "snes9x",
+      "fallbackCore": "snes9x",
+      "profile": "balanced",
+      "chip": "None",
+      "aspect": "4-3",
+      "filter": "pixel",
+      "notes": "ROM integrada enviada pelo usuário. Não exige coprocessador especial; Snes9x é o padrão recomendado."
     }
   }
 }
