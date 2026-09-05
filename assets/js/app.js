@@ -1,9 +1,10 @@
 (() => {
   'use strict';
 
-  const CDN_STABLE = 'https://cdn.emulatorjs.org/stable/data/';
-  const CDN_BSNES = 'https://cdn.emulatorjs.org/nightly/data/';
-  const LOCAL_DATA = './vendor/emulatorjs/data/';
+  const CDN_STABLE = 'https://cdn.emulatorjs.org/4.2.3/data/';
+  const CDN_BSNES = 'https://cdn.emulatorjs.org/4.3.0-pre/data/';
+  const LOCAL_STABLE_DATA = './vendor/emulatorjs/stable-4.2.3/data/';
+  const LOCAL_BSNES_DATA = './vendor/emulatorjs/bsnes-4.3.0-pre/data/';
   const PREF_KEY = 'snes-nova:prefs:v1';
   const RECENT_KEY = 'snes-nova:recent:v1';
   const BENCH_KEY = 'snes-nova:benchmark:v1';
@@ -165,14 +166,19 @@
     el.textContent = `${label} • ${result.score} pts`;
   }
 
-  async function detectRuntimeSource() {
+  async function detectRuntimeSource(core = 'snes9x') {
     const out = $('#runtimeSource');
+    const localPath = core === 'bsnes' ? LOCAL_BSNES_DATA : LOCAL_STABLE_DATA;
     try {
-      const r = await fetch(`${LOCAL_DATA}loader.js`, { method: 'HEAD', cache: 'no-store' });
-      if (r.ok) { if (out) out.textContent = 'Local'; return 'local'; }
+      const r = await fetch(`${localPath}loader.js`, { method: 'HEAD', cache: 'no-store' });
+      if (r.ok) {
+        if (out) out.textContent = core === 'bsnes' ? 'Local • bsnes' : 'Local • Snes9x 4.2.3';
+        return { source: 'local', dataPath: localPath };
+      }
     } catch {}
-    if (out) out.textContent = 'CDN + cache';
-    return 'cdn';
+    const cdnPath = core === 'bsnes' ? CDN_BSNES : CDN_STABLE;
+    if (out) out.textContent = core === 'bsnes' ? 'CDN bsnes • fallback' : 'CDN Snes9x • fallback';
+    return { source: 'cdn', dataPath: cdnPath };
   }
 
   function detectGraphicsCapabilities() {
@@ -320,14 +326,18 @@
     const info = { filename: safeTitle(file.name), header: null, zipped: /\.zip$/i.test(file.name), size: file.size };
     if (info.zipped) return info;
     try {
+      if (window.SNESNova?.romAnalyzer) {
+        const a = await window.SNESNova.romAnalyzer.analyzeFile(file);
+        info.analysis = a;
+        info.header = { title:a.title, mapMode:parseInt(a.mapMode,16)||0, romType:parseInt(a.cartridgeType,16)||0, region:a.region, score:99 };
+        info.hasCopierHeader = a.copierHeader;
+        info.crc32 = a.crc32; info.sha1 = a.sha1; info.chip = a.chip; info.mapper = a.mapper; info.sramSize = a.sramSize;
+        return info;
+      }
       const bytes = new Uint8Array(await file.arrayBuffer());
       const copierOffset = (bytes.length % 0x8000 === 512) ? 512 : 0;
-      const candidates = [0x7fc0, 0xffc0, 0x40ffc0]
-        .map(x => readHeader(bytes, x + copierOffset))
-        .filter(Boolean)
-        .sort((a,b) => b.score - a.score);
-      info.header = candidates[0] || null;
-      info.hasCopierHeader = copierOffset === 512;
+      const candidates = [0x7fc0, 0xffc0, 0x40ffc0].map(x => readHeader(bytes, x + copierOffset)).filter(Boolean).sort((a,b) => b.score - a.score);
+      info.header = candidates[0] || null; info.hasCopierHeader = copierOffset === 512;
     } catch {}
     return info;
   }
@@ -489,7 +499,9 @@
     const resolvedGraphics = resolveGraphicsProfile(prefs.graphics, caps);
     const romInfo = await inspectRom(file);
     const profileKey = makeGameProfileKey(file, romInfo, bundledGame);
+    window.__SNESNovaRomRegion = romInfo?.analysis?.region || romInfo?.header?.region || '';
     const learnedProfile = prefs.gameProfiles ? getGameProfiles()[profileKey] : null;
+    const compatibility = window.SNESNova?.compatibility ? await window.SNESNova.compatibility.lookup(romInfo.analysis || romInfo) : null;
     let smartDecision = prefs.core === 'auto'
       ? chooseSmartCore(file, romInfo, learnedProfile)
       : { core: prefs.core, reasons: ['core escolhido manualmente nas preferências'], hw: hardwareProfile(), accuracyHint: false };
@@ -498,7 +510,14 @@
     } else if (prefs.core === 'auto' && bundledGame?.preferred === 'bsnes' && hardwareProfile().strong) {
       smartDecision = { core: 'bsnes', reasons: ['perfil conhecido deste jogo', 'hardware suficiente para priorizar maior precisão'], hw: hardwareProfile(), accuracyHint: true };
     }
+    if (prefs.core === 'auto' && compatibility) {
+      const hwNow = hardwareProfile();
+      const rec = compatibility.recommendedCore;
+      if (rec === 'bsnes' && !hwNow.weak && getBenchmark()?.tier !== 'low') smartDecision = { core:'bsnes', reasons:['banco de compatibilidade por CRC32/SHA-1', compatibility.notes || 'perfil de precisão recomendado'], hw:hwNow, accuracyHint:true, database:true };
+      else if (rec === 'snes9x' || compatibility.fallbackCore === 'snes9x') smartDecision = { core:'snes9x', reasons:['banco de compatibilidade por CRC32/SHA-1', compatibility.notes || 'perfil de desempenho recomendado'], hw:hwNow, accuracyHint:false, database:true };
+    }
     const selectedCore = smartDecision.core;
+    window.SNESNova?.session?.begin({title: bundledGame?.title || safeTitle(file.name), hash: romInfo.sha1 || romInfo.crc32 || profileKey, core:selectedCore});
     addRecent(file);
     if (activeRomUrl) URL.revokeObjectURL(activeRomUrl);
     activeRomUrl = URL.createObjectURL(file);
@@ -514,15 +533,20 @@
     $('#game').innerHTML = '';
     applyDisplayScale(prefs.resolution, prefs.sharp, resolvedGraphics);
     applyVideoPresentation(prefs, resolvedGraphics);
-    const runtimeSource = await detectRuntimeSource();
-    const dataPath = runtimeSource === 'local' ? LOCAL_DATA : (selectedCore === 'bsnes' ? CDN_BSNES : CDN_STABLE);
+    const runtime = await detectRuntimeSource(selectedCore);
+    const runtimeSource = runtime.source;
+    const dataPath = runtime.dataPath;
 
     // Public/documented EmulatorJS configuration only.
     window.EJS_player = '#game';
     window.EJS_core = selectedCore;
     window.EJS_gameUrl = activeRomUrl;
     window.EJS_gameName = title;
-    window.EJS_gameID = hashString(`${bundledGame?.id || file.name}:${file.size}`);
+    window.EJS_gameID = parseInt((romInfo.crc32 || '00000001').slice(-8), 16) >>> 0;
+    window.EJS_onSaveState = function(e){ window.dispatchEvent(new CustomEvent('snesnova:savestate',{detail:{payload:e,hash:romInfo.sha1||romInfo.crc32||profileKey,at:Date.now()}})); };
+    window.EJS_onLoadState = function(e){ window.dispatchEvent(new CustomEvent('snesnova:loadstate',{detail:{payload:e,hash:romInfo.sha1||romInfo.crc32||profileKey,at:Date.now()}})); };
+    window.EJS_onSaveUpdate = function(e){ window.dispatchEvent(new CustomEvent('snesnova:saveupdate',{detail:{payload:e,hash:romInfo.sha1||romInfo.crc32||profileKey,at:Date.now()}})); };
+    window.EJS_onExit = function(){ window.SNESNova?.session?.stop('ejs-exit'); window.dispatchEvent(new CustomEvent('snesnova:ejsexit')); };
     window.EJS_pathtodata = dataPath;
     window.EJS_language = 'pt-BR';
     window.EJS_volume = prefs.volume;
@@ -539,7 +563,7 @@
       photo: { source: 'canvas', format: 'png', upscale: prefs.captureScale || 2 },
       video: { format: 'detect', upscale: Math.min(2, prefs.captureScale || 1), fps: 60, videoBitrate: 2621440, audioBitrate: 196608 }
     };
-    window.EJS_defaultOptions = graphicOptions(resolvedGraphics, prefs.fps, prefs.filter);
+    window.EJS_defaultOptions = Object.assign(graphicOptions(resolvedGraphics, prefs.fps, prefs.filter), window.SNESNova?.enhancements?.coreOptions?.() || {});
     window.EJS_cacheConfig = { cache: true };
     window.EJS_Buttons = {
       playPause: true, restart: true, mute: true, settings: true,
@@ -551,6 +575,7 @@
     window.EJS_onExit = () => showLibrary();
     window.EJS_onGameStart = () => {
       document.title = `${title} • SNES Nova`;
+      window.SNESNova?.session?.started();
       if (prefs.gameProfiles) saveGameProfile(profileKey, { core: selectedCore, graphics: resolvedGraphics, aspect: prefs.aspect, filter: prefs.filter, overscan: prefs.overscan });
       const status = $('#runtimeVideoStatus');
       if (status) {
@@ -570,16 +595,18 @@
     script.src = `${dataPath}loader.js`;
     script.dataset.ejsLoader = '1';
     script.onerror = () => {
-      if (selectedCore === 'bsnes' && dataPath === CDN_BSNES) alert('O runtime bsnes não pôde ser carregado. Troque para Snes9x ou verifique a conexão.');
-      else alert('Não foi possível carregar o núcleo do emulador. Verifique sua conexão ou instale o runtime em vendor/emulatorjs/data/.');
+      window.SNESNova?.session?.stop('loader-error');
+      if (selectedCore === 'bsnes') alert('O runtime bsnes não pôde ser carregado. Execute o instalador de runtime ou deixe o fallback online disponível.');
+      else alert('Não foi possível carregar o Snes9x. Execute o instalador de runtime ou verifique a conexão.');
     };
     document.body.appendChild(script);
   }
 
   function showLibrary() {
+    window.SNESNova?.session?.stop('library');
     playerView.hidden = true;
     launcherView.hidden = false;
-    document.title = 'SNES Nova';
+    document.title = 'SNES Nova 0.9.1';
     $('#game').innerHTML = '';
     // Full core teardown is owned by EmulatorJS exit button. Reload offers a guaranteed clean boot.
   }

@@ -8,21 +8,26 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="assets/css/app.css" />
-  <title>SNES Nova 0.5.0</title>
+  <title>SNES Nova 0.9.1</title>
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
 </head>
 <body>
+  <div id="bootScreen" class="boot-screen"><div class="boot-logo">N</div><h1>SNES Nova</h1><p id="bootStatus">Inicializando biblioteca, vídeo e controles…</p><div class="boot-progress"><i></i></div></div>
   <div class="app-shell">
     <header class="topbar">
       <div class="brand">
         <div class="brand-mark" aria-hidden="true">N</div>
         <div>
           <strong>SNES Nova</strong>
-          <span>v0.6.0 • Super Nintendo • Smart Performance</span>
+          <span>v0.9.1 • Super Nintendo • Smart Performance</span>
         </div>
       </div>
       <div class="top-actions">
         <span id="gamepadStatus" class="status-pill"><i></i> Gamepad não detectado</span>
         <button id="installBtn" class="ghost-btn" hidden>Instalar</button>
+        <button id="tvModeBtn" class="ghost-btn">Modo TV</button>
+        <button id="controlsBtn" class="ghost-btn">Controles</button>
+        <button id="saveManagerBtn" class="ghost-btn">Saves</button><button id="storageBtn" class="ghost-btn">Armazenamento</button><button id="diagnosticsBtn" class="ghost-btn">Diagnóstico</button>
         <button id="settingsBtn" class="ghost-btn">Preferências</button>
       </div>
     </header>
@@ -147,6 +152,10 @@
           <div class="advanced-strip"><input id="librarySearch" type="search" placeholder="Buscar jogo…"><select id="librarySort"><option value="recent">Mais recentes</option><option value="name">Nome A–Z</option><option value="favorite">Favoritos primeiro</option></select><label class="primary-btn" for="romInput">+ Adicionar ROM</label></div>
           <div id="smartLibraryGrid" class="smart-library-grid"></div>
         </section>
+        <section class="top-games-section">
+          <div class="section-head"><div><p class="eyebrow">TOP 10 CLÁSSICOS</p><h2>Grandes jogos para sua biblioteca</h2></div><small>Associe suas próprias ROMs legais</small></div>
+          <div id="topGamesGrid" class="top-games-grid"></div>
+        </section>
         <section class="recent-section">
           <div class="section-head">
             <div><p class="eyebrow">BIBLIOTECA LOCAL</p><h2>Jogos recentes</h2></div>
@@ -176,6 +185,7 @@
         </div>
         <div class="player-stage" id="playerStage">
           <div id="game"></div>
+          <div id="touchControls" class="touch-controls" hidden aria-label="Controles de toque"><div class="touch-dpad"><button data-key="ArrowUp">▲</button><button data-key="ArrowLeft">◀</button><button data-key="ArrowDown">▼</button><button data-key="ArrowRight">▶</button></div><div class="touch-center"><button data-key="Select">SELECT</button><button data-key="Enter">START</button></div><div class="touch-abxy"><button data-key="KeyY">Y</button><button data-key="KeyX">X</button><button data-key="KeyB">B</button><button data-key="KeyA">A</button></div></div>
         </div>
         <div id="coreDecision" class="core-decision" hidden></div>
         <div class="shortcut-bar">
@@ -192,6 +202,9 @@
   <dialog id="controlsDialog" class="dialog"><form method="dialog"><div class="dialog-head"><div><small>CONTROLES</small><h2>Jogadores P1/P2</h2></div><button class="icon-btn">×</button></div><div id="controllerList"></div><p class="dialog-note">O SNES Nova detecta até múltiplos gamepads; o remapeamento detalhado permanece no painel de controles do EmulatorJS para manter compatibilidade com todos os cores.</p></form></dialog>
   <dialog id="saveManagerDialog" class="dialog"><form method="dialog"><div class="dialog-head"><div><small>PROGRESSO</small><h2>Save Manager</h2></div><button class="icon-btn">×</button></div><div class="quick-actions"><button id="quickSave2" type="button" class="primary-btn">Quick Save</button><button id="quickLoad2" type="button" class="secondary-btn">Quick Load</button><button id="exportAppData" type="button" class="ghost-btn">Exportar backup do app</button></div><p class="dialog-note">SRAM e save states continuam armazenados pelo EmulatorJS no navegador. O backup exporta biblioteca, hashes, perfis e estatísticas do SNES Nova; saves do core podem ser exportados pelo botão de arquivos .sav do próprio emulador.</p></form></dialog>
   <div id="updateNotice" class="update-notice" hidden>Nova versão do app disponível. <button id="reloadUpdate" class="primary-btn compact">Atualizar</button></div>
+  <dialog id="storageDialog" class="dialog"><form method="dialog"><div class="dialog-head"><div><small>SISTEMA</small><h2>Armazenamento</h2></div><button class="icon-btn">×</button></div><div id="storageBreakdown" class="storage-breakdown"></div><div class="dialog-actions"><button id="persistStorageBtn" type="button" class="secondary-btn">Proteger armazenamento</button><button id="clearSnapshotsBtn" type="button" class="ghost-btn">Limpar previews</button><button id="clearRuntimeCacheBtn" type="button" class="danger-btn">Limpar cache do runtime</button></div></form></dialog>
+  <dialog id="diagnosticsDialog" class="dialog"><form method="dialog"><div class="dialog-head"><div><small>DIAGNÓSTICO AO VIVO</small><h2>SNES Nova</h2></div><button class="icon-btn">×</button></div><div id="diagnosticsLive" class="diagnostics-live"></div><div class="dialog-actions"><button id="exportDiagnosticsBtn" type="button" class="primary-btn">Exportar JSON</button><button id="copyDiagnosticsBtn" type="button" class="secondary-btn">Copiar resumo</button></div></form></dialog>
+  <dialog id="topGameDialog" class="dialog"><form method="dialog"><div class="dialog-head"><div><small>TOP 10</small><h2 id="topGameTitle">Jogo</h2></div><button class="icon-btn">×</button></div><div id="topGameBody"></div></form></dialog>
   <dialog id="settingsDialog" class="dialog">
     <form method="dialog">
       <div class="dialog-head"><div><small>PREFERÊNCIAS</small><h2>SNES Nova</h2></div><button value="cancel" class="icon-btn">×</button></div>
@@ -204,12 +217,22 @@
         <select id="captureScaleSelect"><option value="1">1×</option><option value="2">2×</option><option value="3">3×</option><option value="4">4×</option></select>
       </label>
       <label class="switch-row"><span>Confirmar antes de sair</span><input id="confirmExitToggle" type="checkbox" checked><i></i></label>
-      <div class="panel-title"><span>Ajuste fino de vídeo</span><small>em tempo real</small></div><div class="color-lab"><label>Brilho<input id="brightnessRange" type="range" min="0.7" max="1.35" step="0.05" value="1"></label><label>Contraste<input id="contrastRange" type="range" min="0.7" max="1.5" step="0.05" value="1"></label><label>Saturação<input id="saturationRange" type="range" min="0" max="1.8" step="0.05" value="1"></label><label>Scanlines<input id="scanlineRange" type="range" min="0" max="0.5" step="0.05" value="0"></label></div><p class="dialog-note">O mapeamento detalhado de teclado/gamepad, cheats e slots de state continuam no painel do próprio EmulatorJS. O SNES Nova agora aprende um perfil por jogo e combina isso com benchmark do dispositivo.</p>
+      <label class="switch-row"><span>Controles touch no celular</span><input id="touchToggle" type="checkbox" checked><i></i></label><label class="field">Idioma<select id="languageSelect"><option value="pt-BR">Português</option><option value="en-US">English</option><option value="es">Español</option></select></label><div class="panel-title"><span>Ajuste fino de vídeo</span><small>em tempo real</small></div><div class="color-lab"><label>Brilho<input id="brightnessRange" type="range" min="0.7" max="1.35" step="0.05" value="1"></label><label>Contraste<input id="contrastRange" type="range" min="0.7" max="1.5" step="0.05" value="1"></label><label>Saturação<input id="saturationRange" type="range" min="0" max="1.8" step="0.05" value="1"></label><label>Scanlines<input id="scanlineRange" type="range" min="0" max="0.5" step="0.05" value="0"></label></div><p class="dialog-note">O mapeamento detalhado de teclado/gamepad, cheats e slots de state continuam no painel do próprio EmulatorJS. O SNES Nova agora aprende um perfil por jogo e combina isso com benchmark do dispositivo.</p>
       <div class="dialog-actions"><button value="cancel" class="secondary-btn">Fechar</button><button id="savePrefsBtn" value="default" class="primary-btn">Salvar</button></div>
     </form>
   </dialog>
 
+  <script src="assets/js/modules/logger.js"></script>
+  <script src="assets/js/modules/zip-reader.js"></script>
+  <script src="assets/js/modules/rom-analyzer.js"></script>
+  <script src="assets/js/modules/compatibility.js"></script>
+  <script src="assets/js/modules/session-manager.js"></script>
+  <script src="assets/js/modules/patches.js"></script>
+  <script src="assets/js/modules/diagnostics.js"></script>
+  <script src="assets/js/modules/enhancements.js"></script>
   <script src="assets/js/app.js"></script>
   <script src="assets/js/advanced.js"></script>
+  <script src="assets/js/v090.js"></script>
+  <script src="assets/js/v091.js"></script>
 </body>
 </html>
