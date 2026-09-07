@@ -39,6 +39,12 @@
   const overscanToggle = $('#overscanToggle');
   const gameProfilesToggle = $('#gameProfilesToggle');
   const autoBenchmarkToggle = $('#autoBenchmarkToggle');
+  const themeSelect = $('#themeSelect');
+  const featuredRail = $('#featuredRail');
+  const browsePreview = $('#browsePreview');
+  const consoleNav = $('#consoleNav');
+  const uiSoundToggle = $('#uiSoundToggle');
+  const uiSoundVolumeRange = $('#uiSoundVolumeRange');
 
   const defaults = {
     core: 'auto',
@@ -58,7 +64,10 @@
     filter: 'pixel',
     overscan: false,
     gameProfiles: true,
-    autoBenchmark: true
+    autoBenchmark: true,
+    theme: 'nova',
+    uiSounds: true,
+    uiSoundVolume: 0.35
   };
 
   function loadPrefs() {
@@ -85,7 +94,10 @@
       filter: filterSelect.value,
       overscan: overscanToggle.checked,
       gameProfiles: gameProfilesToggle.checked,
-      autoBenchmark: autoBenchmarkToggle.checked
+      autoBenchmark: autoBenchmarkToggle.checked,
+      theme: themeSelect?.value || 'nova',
+      uiSounds: uiSoundToggle?.checked !== false,
+      uiSoundVolume: Number(uiSoundVolumeRange?.value || 0.35)
     };
     localStorage.setItem(PREF_KEY, JSON.stringify(prefs));
     return prefs;
@@ -111,6 +123,129 @@
     overscanToggle.checked = Boolean(p.overscan);
     gameProfilesToggle.checked = p.gameProfiles !== false;
     autoBenchmarkToggle.checked = p.autoBenchmark !== false;
+    if (themeSelect) themeSelect.value = p.theme || 'nova';
+    if (uiSoundToggle) uiSoundToggle.checked = p.uiSounds !== false;
+    if (uiSoundVolumeRange) uiSoundVolumeRange.value = String(p.uiSoundVolume ?? 0.35);
+    applyTheme(p.theme || 'nova');
+  }
+
+  function applyTheme(theme = 'nova') {
+    const next = ['nova','aurora','sunset'].includes(theme) ? theme : 'nova';
+    document.documentElement.setAttribute('data-theme', next);
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', next === 'aurora' ? '#0b1024' : next === 'sunset' ? '#1a0e12' : '#0b1020');
+    const btn = $('#themeQuickBtn');
+    if (btn) btn.textContent = next === 'aurora' ? 'Tema: Aurora' : next === 'sunset' ? 'Tema: Sunset' : 'Tema: Nova';
+  }
+
+  function cycleTheme() {
+    const order = ['nova', 'aurora', 'sunset'];
+    const current = loadPrefs().theme || 'nova';
+    const next = order[(order.indexOf(current) + 1) % order.length];
+    if (themeSelect) themeSelect.value = next;
+    const prefs = savePrefs();
+    applyTheme(prefs.theme);
+  }
+
+  function revealShell() { document.body.classList.add('app-ready'); }
+
+  let uiAudioContext = null;
+  function ensureUiAudio() {
+    if (uiAudioContext) return uiAudioContext;
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return null;
+    uiAudioContext = new Ctx();
+    return uiAudioContext;
+  }
+
+  function playUiSound(type = 'tap') {
+    const prefs = loadPrefs();
+    if (prefs.uiSounds === false) return;
+    const ctx = ensureUiAudio();
+    if (!ctx) return;
+    try { if (ctx.state === 'suspended') ctx.resume(); } catch {}
+    const now = ctx.currentTime + 0.001;
+    const gain = ctx.createGain();
+    const osc = ctx.createOscillator();
+    const tones = { hover: [520, 640, 0.012], tap: [640, 520, 0.03], confirm: [420, 760, 0.06] };
+    const [start, end, duration] = tones[type] || tones.tap;
+    const volume = Math.max(0, Math.min(1, Number(prefs.uiSoundVolume ?? 0.35))) * (type === 'hover' ? 0.35 : type === 'confirm' ? 0.6 : 0.45);
+    osc.type = type === 'confirm' ? 'triangle' : 'sine';
+    osc.frequency.setValueAtTime(start, now);
+    osc.frequency.exponentialRampToValueAtTime(Math.max(80, end), now + duration);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, volume), now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + duration + 0.02);
+  }
+
+  function wireUiSounds() {
+    document.addEventListener('click', (e) => {
+      const target = e.target.closest('button, .primary-btn, .secondary-btn, .ghost-btn, .mini-btn, .play-bundled, .play-featured');
+      if (target) playUiSound(target.classList.contains('primary-btn') ? 'confirm' : 'tap');
+    }, true);
+    document.addEventListener('pointerover', (e) => {
+      const target = e.target.closest('.bundled-card, .featured-card, .smart-game-card, .top-game-card, .recent-card, .console-nav-btn');
+      if (target) playUiSound('hover');
+    }, true);
+  }
+
+  function setBrowseAtmosphere(id = 'default') {
+    document.body.setAttribute('data-atmosphere', id || 'default');
+  }
+
+  function previewGameData(game) {
+    if (!game) return null;
+    return {
+      id: game.atmosphere || game.id || game.hash || 'library',
+      title: game.title || game.name || 'Jogo',
+      subtitle: game.subtitle || game.region || 'Biblioteca local',
+      cover: game.cover || game.image || '',
+      badge: game.badge || game.chip || 'SNES',
+      preferred: game.preferred || game.core || 'auto',
+      size: game.size ? formatSize(game.size) : 'biblioteca local',
+      note: game.featured || game.note || game.mapper || 'Pronto para jogar no SNES Nova.'
+    };
+  }
+
+  function renderBrowsePreview(game) {
+    if (!browsePreview) return;
+    const g = previewGameData(game);
+    if (!g) return;
+    browsePreview.innerHTML = `
+      <div class="browse-preview-media ${g.cover ? 'has-image' : ''}">${g.cover ? `<img src="${g.cover}" alt="${escapeHtml(g.title)}">` : `<div class="browse-preview-fallback"><span>${escapeHtml(g.badge)}</span><strong>${escapeHtml(g.title)}</strong></div>`}</div>
+      <div class="browse-preview-copy">
+        <span class="game-badge">${escapeHtml(g.badge)}</span>
+        <h3>${escapeHtml(g.title)}</h3>
+        <p>${escapeHtml(g.subtitle)}</p>
+        <div class="preview-metrics">
+          <div><small>Core</small><strong>${escapeHtml(String(g.preferred).toUpperCase())}</strong></div>
+          <div><small>Tamanho</small><strong>${escapeHtml(g.size)}</strong></div>
+          <div><small>Status</small><strong>Pronto</strong></div>
+        </div>
+        <p class="preview-note">${escapeHtml(g.note)}</p>
+      </div>`;
+    setBrowseAtmosphere(g.id);
+  }
+
+  function bindPreviewTarget(target, payload) {
+    if (!target) return;
+    const activate = () => renderBrowsePreview(payload);
+    target.addEventListener('mouseenter', activate);
+    target.addEventListener('focus', activate);
+    target.addEventListener('touchstart', activate, { passive: true });
+  }
+
+  function setupConsoleNav() {
+    if (!consoleNav) return;
+    consoleNav.querySelectorAll('.console-nav-btn').forEach(btn => btn.addEventListener('click', () => {
+      const target = document.getElementById(btn.dataset.target);
+      target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      consoleNav.querySelectorAll('.console-nav-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }));
   }
 
   function getBenchmark() {
@@ -266,9 +401,9 @@
 
 
   const BUNDLED_GAMES = [
-    { id: 'doom-1995', title: 'Doom', subtitle: 'Williams • 1995', file: './games/doom-1995.sfc', size: 2097152, badge: 'Super FX', preferred: 'bsnes' },
-    { id: 'final-fight', title: 'Final Fight', subtitle: 'Capcom', file: './games/final-fight.sfc', size: 1048576, badge: 'Beat em up', preferred: 'snes9x' },
-    { id: 'final-fight-3', title: 'Final Fight 3', subtitle: 'Capcom • 1995', file: './games/final-fight-3.sfc', size: 3145728, badge: 'Beat em up', preferred: 'snes9x' }
+    { id: 'doom-1995', title: 'Doom', subtitle: 'Williams • 1995', file: './games/doom-1995.sfc', size: 2097152, badge: 'Super FX', preferred: 'bsnes', cover: './assets/covers/doom-1995.svg', featured: 'Precisão com chip especial e clima clássico.' },
+    { id: 'final-fight', title: 'Final Fight', subtitle: 'Capcom', file: './games/final-fight.sfc', size: 1048576, badge: 'Beat em up', preferred: 'snes9x', cover: './assets/covers/final-fight.svg', featured: 'Beat em up lendário pronto para jogar.' },
+    { id: 'final-fight-3', title: 'Final Fight 3', subtitle: 'Capcom • 1995', file: './games/final-fight-3.sfc', size: 3145728, badge: 'Beat em up', preferred: 'snes9x', cover: './assets/covers/final-fight-3.svg', featured: 'Visual renovado e ação perfeita no mobile.' }
   ];
 
   const ACCURACY_GAME_HINTS = [
@@ -423,11 +558,39 @@
     return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
   }
 
+  function renderFeatured() {
+    if (!featuredRail) return;
+    featuredRail.innerHTML = BUNDLED_GAMES.map((g) => `
+      <article class="featured-card" data-id="${g.id}">
+        <div class="featured-cover">${g.cover ? `<img src="${g.cover}" alt="${escapeHtml(g.title)}" loading="lazy">` : ''}</div>
+        <div class="featured-overlay">
+          <span class="featured-tag">${escapeHtml(g.badge)}</span>
+          <h3>${escapeHtml(g.title)}</h3>
+          <p>${escapeHtml(g.featured || g.subtitle)}</p>
+          <div class="featured-actions">
+            <button class="primary-btn play-featured" data-id="${g.id}">Jogar</button>
+            <button class="ghost-btn go-bundled" data-target="${g.id}">Ver biblioteca</button>
+          </div>
+        </div>
+      </article>`).join('');
+    featuredRail.querySelectorAll('.play-featured').forEach(btn => btn.addEventListener('click', () => bootBundledGame(btn.dataset.id)));
+    featuredRail.querySelectorAll('.featured-card').forEach(card => {
+      const game = BUNDLED_GAMES.find(g => g.id === card.dataset.id);
+      bindPreviewTarget(card, game);
+    });
+    featuredRail.querySelectorAll('.go-bundled').forEach(btn => btn.addEventListener('click', () => {
+      const card = bundledGames?.querySelector(`[data-id="${btn.dataset.target}"]`);
+      card?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      card?.classList.add('spotlight');
+      setTimeout(() => card?.classList.remove('spotlight'), 1300);
+    }));
+  }
+
   function renderBundled() {
     if (!bundledGames) return;
     bundledGames.innerHTML = BUNDLED_GAMES.map((g, i) => `
-      <article class="bundled-card" data-id="${g.id}">
-        <div class="bundled-cover cover-${g.id}"><span>SNES</span><strong>${escapeHtml(g.title)}</strong></div>
+      <article class="bundled-card" tabindex="0" data-id="${g.id}">
+        <div class="bundled-cover cover-${g.id}">${g.cover ? `<img src="${g.cover}" alt="${escapeHtml(g.title)}" loading="lazy">` : `<span>SNES</span><strong>${escapeHtml(g.title)}</strong>`}</div>
         <div class="bundled-meta">
           <span class="game-badge">${escapeHtml(g.badge)}</span>
           <h3>${escapeHtml(g.title)}</h3>
@@ -437,6 +600,10 @@
         </div>
       </article>`).join('');
     bundledGames.querySelectorAll('.play-bundled').forEach(btn => btn.addEventListener('click', () => bootBundledGame(btn.dataset.id)));
+    bundledGames.querySelectorAll('.bundled-card').forEach(card => {
+      const game = BUNDLED_GAMES.find(g => g.id === card.dataset.id);
+      bindPreviewTarget(card, game);
+    });
   }
 
   function appBaseUrl() {
@@ -499,9 +666,11 @@
         <strong>${escapeHtml(g.title)}</strong>
         <small>${formatSize(g.size)} • histórico local</small>
       </article>`).join('');
-    recentGames.querySelectorAll('.recent-card').forEach(card => card.addEventListener('click', () => {
-      romInput.click();
-    }));
+    recentGames.querySelectorAll('.recent-card').forEach((card, index) => {
+      const item = list[index];
+      bindPreviewTarget(card, { id: 'recent', title: item.title, subtitle: 'Histórico local', badge: 'Recente', preferred: 'auto', size: item.size, note: 'Para jogar novamente, selecione a ROM correspondente.' });
+      card.addEventListener('click', () => { romInput.click(); });
+    });
   }
 
   function escapeHtml(v) {
@@ -660,7 +829,7 @@
     window.SNESNova?.session?.stop('library');
     playerView.hidden = true;
     launcherView.hidden = false;
-    document.title = 'SNES Nova 1.0.4';
+    document.title = 'SNES Nova 1.4.0';
     $('#game').innerHTML = '';
     // Full core teardown is owned by EmulatorJS exit button. Reload offers a guaranteed clean boot.
   }
@@ -698,7 +867,9 @@
   });
 
   $('#settingsBtn').addEventListener('click', () => settingsDialog.showModal());
-  $('#savePrefsBtn').addEventListener('click', () => savePrefs());
+  $('#themeQuickBtn')?.addEventListener('click', cycleTheme);
+  themeSelect?.addEventListener('change', () => applyTheme(themeSelect.value));
+  $('#savePrefsBtn').addEventListener('click', () => { const prefs = savePrefs(); applyTheme(prefs.theme); playUiSound('confirm'); });
   $('#backBtn').addEventListener('click', showLibrary);
   $('#libraryBtn').addEventListener('click', () => romInput.click());
   $('#reloadBtn').addEventListener('click', () => location.reload());
@@ -774,7 +945,11 @@
 
   applyPrefsToUi();
   updateCoreAdvice();
+  renderFeatured();
   renderBundled();
+  renderBrowsePreview(BUNDLED_GAMES[0]);
+  setupConsoleNav();
+  wireUiSounds();
   renderRecent();
   updateGamepadStatus();
   updateHardwarePanel();
@@ -782,4 +957,6 @@
   detectRuntimeSource();
   applyVideoPresentation(loadPrefs(), resolveGraphicsProfile(loadPrefs().graphics, detectGraphicsCapabilities()));
   applyDisplayScale(loadPrefs().resolution, loadPrefs().sharp, resolveGraphicsProfile(loadPrefs().graphics, detectGraphicsCapabilities()));
+  window.addEventListener('snesnova:browsepreview', (e) => { if (e.detail) renderBrowsePreview(e.detail); });
+  revealShell();
 })();

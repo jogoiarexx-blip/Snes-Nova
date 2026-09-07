@@ -1,9 +1,27 @@
-# SNES Nova v1.0.4
+## Sistema de conquistas v1.4.0
+
+- conquistas globais e por jogo
+- XP, níveis, raridades e progresso
+- notificações com som
+- Doom, Final Fight e Final Fight 3 com conjuntos próprios
+- persistência local e espelho IndexedDB
+- backup/importação de conquistas
+- infraestrutura declarativa para futuras conquistas por memória, sem endereços inventados
+
+## Novidades da v1.4.0
+
+- menu estilo console com navegação rápida
+- preview animado dos jogos
+- fundo dinâmico por jogo
+- sons de interface configuráveis
+- capas automáticas e personalizáveis para a biblioteca local
+
+# SNES Nova v1.4.0
 
 Frontend web/PWA para emulação SNES baseado em EmulatorJS.
 
 
-## Jogo integrado na v1.0.4
+## Jogo integrado na v1.4.0
 
 - Final Fight 3 (Capcom, 1995)
 - ROM normalizada sem copier header de 512 bytes
@@ -12,7 +30,7 @@ Frontend web/PWA para emulação SNES baseado em EmulatorJS.
 - SHA-256: `F388115A96DCA534B8D7BA2B9A26E6C3C43877BCB8AF27C76C37C851EEB294AD`
 - Core recomendado: `snes9x`
 
-## Destaques v1.0.4
+## Destaques v1.4.0
 - Biblioteca IndexedDB com análise SHA-1/CRC32 e ROMs ZIP extraídas em memória.
 - Top 10 de clássicos com associação da ROM do próprio usuário (ROMs comerciais não são distribuídas).
 - Doom e Final Fight continuam integrados conforme arquivos fornecidos ao projeto.
@@ -36,7 +54,7 @@ Não inclua ROMs comerciais sem autorização. O Top 10 serve como catálogo e p
 
 ## Runtime local / GitHub Pages
 
-A v1.0.4 separa os runtimes para evitar misturar cores incompatíveis:
+A v1.4.0 separa os runtimes para evitar misturar cores incompatíveis:
 
 - Snes9x: EmulatorJS 4.2.3 estável.
 - bsnes: runtime EmulatorJS 4.3.0-pre compatível com o core bsnes.
@@ -54,7 +72,7 @@ O arquivo `vendor/emulatorjs/runtime-manifest.json` é gerado pelo instalador co
 
 ## SNES Nova Engine v1
 
-A versão 1.0.4 adiciona uma camada de engine própria acima do EmulatorJS e dos cores Snes9x/bsnes. Ela detecta WASM SIMD, WebGL2, threads, Workers, OffscreenCanvas e AudioWorklet; cria um perfil de hardware não identificável; aprende o core por jogo+dispositivo; pré-carrega o runtime em idle; move hashing, ZIP e patches para Web Workers quando possível; oferece pós-processamento WebGL2 real; sincroniza o polling de gamepad com `requestAnimationFrame`; e prepara caminhos para builds WebAssembly customizados.
+A versão 1.4.0 adiciona uma camada de engine própria acima do EmulatorJS e dos cores Snes9x/bsnes. Ela detecta WASM SIMD, WebGL2, threads, Workers, OffscreenCanvas e AudioWorklet; cria um perfil de hardware não identificável; aprende o core por jogo+dispositivo; pré-carrega o runtime em idle; move hashing, ZIP e patches para Web Workers quando possível; oferece pós-processamento WebGL2 real; sincroniza o polling de gamepad com `requestAnimationFrame`; e prepara caminhos para builds WebAssembly customizados.
 
 ### Builds customizados
 
@@ -64,7 +82,7 @@ A versão 1.0.4 adiciona uma camada de engine própria acima do EmulatorJS e dos
 
 Em hardware forte, a opção **Pós-processamento WebGL2** pode espelhar o framebuffer do core para um segundo canvas WebGL2 e aplicar brilho, contraste, saturação, gamma e scanlines na GPU. Em hardware classificado como fraco, fica desligada por padrão para não duplicar trabalho gráfico.
 
-## Mobile v1.0.4
+## Mobile v1.4.0
 
 - Modo Jogo com fullscreen/landscape quando o navegador permite.
 - Safe Area para iPhone/iPad e layout com `100dvh`.
@@ -74,10 +92,10 @@ Em hardware forte, a opção **Pós-processamento WebGL2** pode espelhar o frame
 - Perfil bateria desativa pós-processamento extra e prioriza Snes9x no modo automático.
 - A proteção térmica é inferida por degradação sustentada de FPS/stutter; navegadores não expõem temperatura física do aparelho.
 
-## Correção v1.0.4 — Final Fight 3 visível
+## Correção v1.4.0 — Final Fight 3 visível
 
 - Corrigido o contador da seção **Já instalados** para 3 jogos.
 - Final Fight 3 aparece no mesmo grid de Doom e Final Fight.
-- Scripts principais usam cache-busting `?v=1.0.4` para impedir que um Service Worker antigo esconda o novo jogo.
+- Scripts principais usam cache-busting `?v=1.4.0` para impedir que um Service Worker antigo esconda o novo jogo.
 - `app.js` e `advanced.js` passam a usar Network First no Service Worker.
 - Adicionado `data/installed-games.json` como manifesto explícito dos jogos embutidos.

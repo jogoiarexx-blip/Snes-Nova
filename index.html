@@ -4,28 +4,28 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0b1020" />
-  <meta name="description" content="SNES Nova - emulador de Super Nintendo no navegador com seleção inteligente entre Snes9x e bsnes." />
+  <meta name="description" content="SNES Nova 1.4.0 — emulador de Super Nintendo com visual premium, biblioteca local, Engine v1 e seleção inteligente entre Snes9x e bsnes." />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="assets/css/app.css?v=1.0.4" />
-  <title>SNES Nova 1.0.4</title>
+  <link rel="stylesheet" href="assets/css/app.css?v=1.4.0" />
+  <title>SNES Nova 1.4.0</title>
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
 </head>
 <body>
-  <div id="bootScreen" class="boot-screen"><div class="boot-logo">N</div><h1>SNES Nova</h1><p id="bootStatus">Inicializando biblioteca, vídeo e controles…</p><div class="boot-progress"><i></i></div></div>
+  <div id="bootScreen" class="boot-screen"><img class="boot-logo-image" src="assets/branding/logo-mark.svg" alt="SNES Nova" /><img class="boot-wordmark" src="assets/branding/logo-full.svg" alt="SNES Nova" /><p id="bootStatus">Preparando biblioteca, trilha visual, runtime e controles…</p><div class="boot-progress"><i></i></div></div>
   <div class="app-shell">
     <header class="topbar">
       <div class="brand">
-        <div class="brand-mark" aria-hidden="true">N</div>
-        <div>
+        <img class="brand-logo" src="assets/branding/logo-mark.svg" alt="SNES Nova" />
+        <div class="brand-copy">
           <strong>SNES Nova</strong>
-          <span>v1.0.4 • Super Nintendo • Smart Performance</span>
+          <span>v1.4.0 • Achievements Hub • Engine V1</span>
         </div>
       </div>
       <div class="top-actions">
-        <span id="gamepadStatus" class="status-pill"><i></i> Gamepad não detectado</span>
+        <span id="gamepadStatus" class="status-pill"><i></i> Gamepad não detectado</span><span id="achievementProfile" class="achievement-profile"><i></i><span>Nível 1</span><small>0 XP</small></span>
         <button id="installBtn" class="ghost-btn" hidden>Instalar</button>
-        <button id="tvModeBtn" class="ghost-btn">Modo TV</button>
+        <button id="achievementsBtn" class="ghost-btn">Conquistas</button><button id="themeQuickBtn" class="ghost-btn">Tema</button><button id="tvModeBtn" class="ghost-btn">Modo TV</button>
         <button id="controlsBtn" class="ghost-btn">Controles</button>
         <button id="saveManagerBtn" class="ghost-btn">Saves</button><button id="storageBtn" class="ghost-btn">Armazenamento</button><button id="diagnosticsBtn" class="ghost-btn">Diagnóstico</button>
         <button id="settingsBtn" class="ghost-btn">Preferências</button>
@@ -33,25 +33,45 @@
     </header>
 
     <main>
+      <nav id="consoleNav" class="console-nav">
+        <button class="console-nav-btn active" data-target="launcherView">Início</button>
+        <button class="console-nav-btn" data-target="featuredSection">Destaques</button>
+        <button class="console-nav-btn" data-target="browsePreviewSection">Preview</button>
+        <button class="console-nav-btn" data-target="bundledSection">Instalados</button>
+        <button class="console-nav-btn" data-target="smartLibrarySection">Minha biblioteca</button>
+        <button class="console-nav-btn" data-target="topGamesSection">Top 10</button>
+        <button class="console-nav-btn" data-target="recentSection">Recentes</button>
+      </nav>
+
       <section id="launcherView" class="launcher-grid">
         <article class="hero-card">
           <div class="hero-copy">
-            <p class="eyebrow">EMULAÇÃO LOCAL • BIBLIOTECA INTEGRADA</p>
-            <h1>Seu Super Nintendo,<br><span>com cara de aplicativo moderno.</span></h1>
-            <p class="lead">Jogue os títulos já instalados ou carregue uma ROM sua. O núcleo inteligente escolhe entre Snes9x e bsnes conforme o jogo e o hardware.</p>
+            <div class="hero-badges"><span>Engine V1</span><span>PWA</span><span>Mobile Ready</span></div>
+            <p class="eyebrow">EMULAÇÃO LOCAL • BIBLIOTECA INTEGRADA • VISUAL PREMIUM</p>
+            <h1>Seu Super Nintendo,<br><span>com visual profissional e experiência moderna.</span></h1>
+            <p class="lead">Abra seus jogos instalados ou carregue uma ROM própria. O núcleo inteligente escolhe entre Snes9x e bsnes, aprende com o dispositivo e oferece uma experiência polida em desktop, TV e celular.</p>
             <div class="hero-actions">
               <label class="primary-btn" for="romInput">Escolher ROM</label>
               <button id="libraryBtn" class="secondary-btn">Biblioteca recente</button>
             </div>
+            <div class="hero-stats">
+              <div><strong>3</strong><span>Jogos instalados</span></div>
+              <div><strong>2</strong><span>Cores SNES</span></div>
+              <div><strong>PWA</strong><span>Instalável e offline</span></div>
+            </div>
             <p class="hint">Formatos aceitos: .sfc, .smc, .fig e .zip</p>
           </div>
           <div class="console-art" aria-hidden="true">
+            <div class="floating-badge top-right">Core Auto</div>
+            <div class="floating-badge bottom-left">Save States</div>
             <div class="screen-glow"><span>16-BIT</span></div>
             <div class="pad">
               <div class="dpad">✚</div>
               <div class="small-buttons"><b></b><b></b></div>
               <div class="abxy"><b>A</b><b>B</b><b>X</b><b>Y</b></div>
             </div>
+            <div class="spec-card spec-one"><small>Render</small><strong>WebGL2</strong></div>
+            <div class="spec-card spec-two"><small>Perfis</small><strong>Smart</strong></div>
           </div>
         </article>
 
@@ -139,7 +159,15 @@
         </aside>
 
 
-        <section class="bundled-section">
+        <section id="featuredSection" class="featured-rail-section">
+          <div class="section-head">
+            <div><p class="eyebrow">DESTAQUES</p><h2>Seleção em destaque</h2></div>
+            <small class="library-note">estilo console premium</small>
+          </div>
+          <div id="featuredRail" class="featured-rail"></div>
+        </section>
+
+        <section id="bundledSection" class="bundled-section">
           <div class="section-head">
             <div><p class="eyebrow">JÁ INSTALADOS</p><h2>Biblioteca SNES Nova</h2></div>
             <small class="library-note">3 jogos disponíveis</small>
@@ -147,16 +175,16 @@
           <div id="bundledGames" class="bundled-grid"></div>
         </section>
 
-        <section class="smart-library">
+        <section id="smartLibrarySection" class="smart-library">
           <div class="section-head"><div><p class="eyebrow">BIBLIOTECA INTELIGENTE</p><h2>Suas ROMs salvas no navegador</h2></div><small id="storageInfo">Calculando armazenamento…</small></div>
           <div class="advanced-strip"><input id="librarySearch" type="search" placeholder="Buscar jogo…"><select id="librarySort"><option value="recent">Mais recentes</option><option value="name">Nome A–Z</option><option value="favorite">Favoritos primeiro</option></select><label class="primary-btn" for="romInput">+ Adicionar ROM</label></div>
           <div id="smartLibraryGrid" class="smart-library-grid"></div>
         </section>
-        <section class="top-games-section">
+        <section id="topGamesSection" class="top-games-section">
           <div class="section-head"><div><p class="eyebrow">TOP 10 CLÁSSICOS</p><h2>Grandes jogos para sua biblioteca</h2></div><small>Associe suas próprias ROMs legais</small></div>
           <div id="topGamesGrid" class="top-games-grid"></div>
         </section>
-        <section class="recent-section">
+        <section id="recentSection" class="recent-section">
           <div class="section-head">
             <div><p class="eyebrow">BIBLIOTECA LOCAL</p><h2>Jogos recentes</h2></div>
             <button id="clearRecentBtn" class="text-btn">Limpar histórico</button>
@@ -192,6 +220,15 @@
           <span><kbd>F2</kbd> save rápido</span><span><kbd>F4</kbd> load rápido</span><span><kbd>Space</kbd> pause</span><span><kbd>F</kbd> tela cheia</span><span><kbd>Esc</kbd> sair da tela cheia</span>
         </div>
       </section>
+      <footer class="app-footer">
+        <div class="footer-brand">
+          <img src="assets/branding/logo-mark.svg" alt="SNES Nova" />
+          <div><strong>SNES Nova</strong><span>Engine v1 • Achievements Hub 1.4.0</span></div>
+        </div>
+        <div class="footer-grid">
+          <span>Biblioteca local</span><span>Core inteligente</span><span>PWA & offline</span><span>Mobile & TV</span>
+        </div>
+      </footer>
     </main>
   </div>
 
@@ -207,6 +244,8 @@
   <dialog id="storageDialog" class="dialog"><form method="dialog"><div class="dialog-head"><div><small>SISTEMA</small><h2>Armazenamento</h2></div><button class="icon-btn">×</button></div><div id="storageBreakdown" class="storage-breakdown"></div><div class="dialog-actions"><button id="persistStorageBtn" type="button" class="secondary-btn">Proteger armazenamento</button><button id="clearSnapshotsBtn" type="button" class="ghost-btn">Limpar previews</button><button id="clearRuntimeCacheBtn" type="button" class="danger-btn">Limpar cache do runtime</button></div></form></dialog>
   <dialog id="diagnosticsDialog" class="dialog"><form method="dialog"><div class="dialog-head"><div><small>DIAGNÓSTICO AO VIVO</small><h2>SNES Nova</h2></div><button class="icon-btn">×</button></div><div id="diagnosticsLive" class="diagnostics-live"></div><div class="dialog-actions"><button id="exportDiagnosticsBtn" type="button" class="primary-btn">Exportar JSON</button><button id="copyDiagnosticsBtn" type="button" class="secondary-btn">Copiar resumo</button></div></form></dialog>
   <dialog id="topGameDialog" class="dialog"><form method="dialog"><div class="dialog-head"><div><small>TOP 10</small><h2 id="topGameTitle">Jogo</h2></div><button class="icon-btn">×</button></div><div id="topGameBody"></div></form></dialog>
+  <div id="achievementToastHost" class="achievement-toast-host" aria-live="polite"></div>
+  <dialog id="achievementsDialog" class="dialog achievements-dialog"><form method="dialog"><div class="dialog-head"><div><small>PERFIL DO JOGADOR</small><h2>Conquistas</h2></div><button class="icon-btn">×</button></div><div id="achievementsBody"></div><div class="dialog-actions"><button id="resetAchievementsBtn" type="button" class="danger-btn">Resetar conquistas</button><button value="cancel" class="secondary-btn">Fechar</button></div></form></dialog>
   <dialog id="settingsDialog" class="dialog">
     <form method="dialog">
       <div class="dialog-head"><div><small>PREFERÊNCIAS</small><h2>SNES Nova</h2></div><button value="cancel" class="icon-btn">×</button></div>
@@ -220,8 +259,10 @@
       </label>
       <label class="switch-row"><span>Confirmar antes de sair</span><input id="confirmExitToggle" type="checkbox" checked><i></i></label>
       <label class="switch-row"><span>Controles touch no celular</span><input id="touchToggle" type="checkbox" checked><i></i></label>
+      <label class="switch-row"><span>Sons de interface</span><input id="uiSoundToggle" type="checkbox" checked><i></i></label>
+      <label class="field">Volume dos sons da interface <input id="uiSoundVolumeRange" type="range" min="0" max="1" step="0.05" value="0.35"></label>
       <div class="mobile-settings" id="mobileSettings">
-        <div class="panel-title"><span>Mobile</span><small>v1.0.4</small></div>
+        <div class="panel-title"><span>Mobile</span><small>v1.4.0</small></div>
         <label class="field">Perfil mobile<select id="mobileProfileSelect"><option value="auto">Automático</option><option value="battery">Economia de bateria</option><option value="balanced">Equilibrado</option><option value="quality">Qualidade</option></select></label>
         <label class="field">Tamanho dos controles<select id="touchScaleSelect"><option value="0.78">78%</option><option value="0.9">90%</option><option value="1">100%</option><option value="1.12">112%</option><option value="1.25">125%</option></select></label>
         <label class="field">Opacidade dos controles<input id="touchOpacityRange" type="range" min="0.3" max="1" step="0.05" value="0.72"></label>
@@ -229,33 +270,34 @@
         <label class="switch-row"><span>Ocultar touch com gamepad</span><input id="hideTouchGamepadToggle" type="checkbox" checked><i></i></label>
         <label class="switch-row"><span>Sugerir modo paisagem</span><input id="landscapeHintToggle" type="checkbox" checked><i></i></label>
         <label class="switch-row"><span>Proteção térmica/desempenho</span><input id="thermalGuardToggle" type="checkbox" checked><i></i></label>
-      </div><label class="field">Idioma<select id="languageSelect"><option value="pt-BR">Português</option><option value="en-US">English</option><option value="es">Español</option></select></label><div class="panel-title"><span>Ajuste fino de vídeo</span><small>em tempo real</small></div><div class="color-lab"><label>Brilho<input id="brightnessRange" type="range" min="0.7" max="1.35" step="0.05" value="1"></label><label>Contraste<input id="contrastRange" type="range" min="0.7" max="1.5" step="0.05" value="1"></label><label>Saturação<input id="saturationRange" type="range" min="0" max="1.8" step="0.05" value="1"></label><label>Scanlines<input id="scanlineRange" type="range" min="0" max="0.5" step="0.05" value="0"></label></div><p class="dialog-note">O mapeamento detalhado de teclado/gamepad, cheats e slots de state continuam no painel do próprio EmulatorJS. O SNES Nova agora aprende um perfil por jogo e combina isso com benchmark do dispositivo.</p>
+      </div><label class="field">Tema visual<select id="themeSelect"><option value="nova">SNES Nova</option><option value="aurora">Aurora Neon</option><option value="sunset">Sunset Arcade</option></select></label><label class="field">Idioma<select id="languageSelect"><option value="pt-BR">Português</option><option value="en-US">English</option><option value="es">Español</option></select></label><div class="panel-title"><span>Ajuste fino de vídeo</span><small>em tempo real</small></div><div class="color-lab"><label>Brilho<input id="brightnessRange" type="range" min="0.7" max="1.35" step="0.05" value="1"></label><label>Contraste<input id="contrastRange" type="range" min="0.7" max="1.5" step="0.05" value="1"></label><label>Saturação<input id="saturationRange" type="range" min="0" max="1.8" step="0.05" value="1"></label><label>Scanlines<input id="scanlineRange" type="range" min="0" max="0.5" step="0.05" value="0"></label></div><p class="dialog-note">O mapeamento detalhado de teclado/gamepad, cheats e slots de state continuam no painel do próprio EmulatorJS. O SNES Nova agora aprende um perfil por jogo, permite sons de interface, preview dinâmico e capas na biblioteca local.</p>
       <div class="dialog-actions"><button value="cancel" class="secondary-btn">Fechar</button><button id="savePrefsBtn" value="default" class="primary-btn">Salvar</button></div>
     </form>
   </dialog>
 
-  <script src="assets/js/engine/workers/worker-manager.js?v=1.0.4"></script>
-  <script src="assets/js/engine/core/core-manager.js?v=1.0.4"></script>
-  <script src="assets/js/engine/performance/adaptive-engine.js?v=1.0.4"></script>
-  <script src="assets/js/engine/engine-manager.js?v=1.0.4"></script>
-  <script src="assets/js/engine/video/video-engine.js?v=1.0.4"></script>
-  <script src="assets/js/engine/video/gpu-presenter.js?v=1.0.4"></script>
-  <script src="assets/js/engine/audio/adaptive-audio.js?v=1.0.4"></script>
-  <script src="assets/js/engine/input/low-latency-input.js?v=1.0.4"></script>
-  <script src="assets/js/modules/logger.js?v=1.0.4"></script>
-  <script src="assets/js/modules/zip-reader.js?v=1.0.4"></script>
-  <script src="assets/js/modules/rom-analyzer.js?v=1.0.4"></script>
-  <script src="assets/js/modules/compatibility.js?v=1.0.4"></script>
-  <script src="assets/js/modules/session-manager.js?v=1.0.4"></script>
-  <script src="assets/js/modules/patches.js?v=1.0.4"></script>
-  <script src="assets/js/modules/diagnostics.js?v=1.0.4"></script>
-  <script src="assets/js/modules/enhancements.js?v=1.0.4"></script>
-  <script src="assets/js/engine/workers/offload.js?v=1.0.4"></script>
-  <script src="assets/js/app.js?v=1.0.4"></script>
-  <script src="assets/js/advanced.js?v=1.0.4"></script>
-  <script src="assets/js/v090.js?v=1.0.4"></script>
-  <script src="assets/js/v091.js?v=1.0.4"></script>
-  <script src="assets/js/v100.js?v=1.0.4"></script>
-  <script src="assets/js/v102.js?v=1.0.4"></script>
+  <script src="assets/js/engine/workers/worker-manager.js?v=1.4.0"></script>
+  <script src="assets/js/engine/core/core-manager.js?v=1.4.0"></script>
+  <script src="assets/js/engine/performance/adaptive-engine.js?v=1.4.0"></script>
+  <script src="assets/js/engine/engine-manager.js?v=1.4.0"></script>
+  <script src="assets/js/engine/video/video-engine.js?v=1.4.0"></script>
+  <script src="assets/js/engine/video/gpu-presenter.js?v=1.4.0"></script>
+  <script src="assets/js/engine/audio/adaptive-audio.js?v=1.4.0"></script>
+  <script src="assets/js/engine/input/low-latency-input.js?v=1.4.0"></script>
+  <script src="assets/js/modules/logger.js?v=1.4.0"></script>
+  <script src="assets/js/modules/zip-reader.js?v=1.4.0"></script>
+  <script src="assets/js/modules/rom-analyzer.js?v=1.4.0"></script>
+  <script src="assets/js/modules/compatibility.js?v=1.4.0"></script>
+  <script src="assets/js/modules/session-manager.js?v=1.4.0"></script>
+  <script src="assets/js/modules/patches.js?v=1.4.0"></script>
+  <script src="assets/js/modules/diagnostics.js?v=1.4.0"></script>
+  <script src="assets/js/modules/enhancements.js?v=1.4.0"></script>
+  <script src="assets/js/modules/achievements.js?v=1.4.0"></script>
+  <script src="assets/js/engine/workers/offload.js?v=1.4.0"></script>
+  <script src="assets/js/app.js?v=1.4.0"></script>
+  <script src="assets/js/advanced.js?v=1.4.0"></script>
+  <script src="assets/js/v090.js?v=1.4.0"></script>
+  <script src="assets/js/v091.js?v=1.4.0"></script>
+  <script src="assets/js/v100.js?v=1.4.0"></script>
+  <script src="assets/js/v102.js?v=1.4.0"></script>
 </body>
 </html>
