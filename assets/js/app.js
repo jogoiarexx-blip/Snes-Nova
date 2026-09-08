@@ -12,6 +12,7 @@
   let deferredInstallPrompt = null;
   let activeRomUrl = null;
   let activeRomName = null;
+  let lastLibraryScrollY = 0;
 
   const $ = (s) => document.querySelector(s);
   const launcherView = $('#launcherView');
@@ -45,6 +46,8 @@
   const consoleNav = $('#consoleNav');
   const uiSoundToggle = $('#uiSoundToggle');
   const uiSoundVolumeRange = $('#uiSoundVolumeRange');
+  const homeCoverWall = $('#homeCoverWall');
+  const categoryGrid = $('#categoryGrid');
 
   const defaults = {
     core: 'auto',
@@ -148,6 +151,19 @@
   }
 
   function revealShell() { document.body.classList.add('app-ready'); }
+
+  function rememberLibraryScroll() { lastLibraryScrollY = window.scrollY || window.pageYOffset || 0; }
+
+  function focusPlayerView() {
+    if (!playerView || playerView.hidden) return;
+    document.body.classList.add('session-active');
+    requestAnimationFrame(() => playerView.focus?.({preventScroll:true}));
+  }
+
+  function restoreLibraryScroll() {
+    document.body.classList.remove('session-active');
+    requestAnimationFrame(() => window.scrollTo({ top: Math.max(0, lastLibraryScrollY || 0), behavior: 'smooth' }));
+  }
 
   let uiAudioContext = null;
   function ensureUiAudio() {
@@ -558,6 +574,41 @@
     return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
   }
 
+  function renderHomeShowcase() {
+    if (!homeCoverWall) return;
+    homeCoverWall.innerHTML = BUNDLED_GAMES.map((g, index) => `
+      <article class="home-cover-card" tabindex="0" data-id="${g.id}">
+        <img src="${g.cover || ''}" alt="${escapeHtml(g.title)}" loading="lazy">
+        <div class="home-cover-overlay">
+          <span>${escapeHtml(g.badge)}</span>
+          <h3>${escapeHtml(g.title)}</h3>
+          <p>${escapeHtml(g.subtitle)}</p>
+          <button class="primary-btn home-play-btn" data-id="${g.id}">Jogar agora</button>
+        </div>
+      </article>`).join('');
+    homeCoverWall.querySelectorAll('.home-play-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); bootBundledGame(btn.dataset.id); }));
+    homeCoverWall.querySelectorAll('.home-cover-card').forEach(card => {
+      const g = BUNDLED_GAMES.find(x => x.id === card.dataset.id);
+      bindPreviewTarget(card, g);
+      card.addEventListener('dblclick', () => bootBundledGame(card.dataset.id));
+    });
+  }
+
+  function setupCategories() {
+    if (!categoryGrid) return;
+    categoryGrid.querySelectorAll('.category-card').forEach(btn => btn.addEventListener('click', () => {
+      const cat = btn.dataset.category;
+      categoryGrid.querySelectorAll('.category-card').forEach(x => x.classList.remove('active'));
+      btn.classList.add('active');
+      if (cat === 'installed') document.getElementById('bundledSection')?.scrollIntoView({behavior:'smooth',block:'start'});
+      else if (cat === 'favorites') { const sort = document.getElementById('librarySort'); if (sort) { sort.value='favorite'; sort.dispatchEvent(new Event('change')); } document.getElementById('smartLibrarySection')?.scrollIntoView({behavior:'smooth',block:'start'}); }
+      else if (cat === 'beat') { document.querySelectorAll('.bundled-card').forEach(c => c.hidden = !['final-fight','final-fight-3'].includes(c.dataset.id)); document.getElementById('bundledSection')?.scrollIntoView({behavior:'smooth',block:'start'}); setTimeout(()=>document.querySelectorAll('.bundled-card').forEach(c=>c.hidden=false),7000); }
+      else if (cat === 'special') { document.querySelectorAll('.bundled-card').forEach(c => c.hidden = c.dataset.id !== 'doom-1995'); document.getElementById('bundledSection')?.scrollIntoView({behavior:'smooth',block:'start'}); setTimeout(()=>document.querySelectorAll('.bundled-card').forEach(c=>c.hidden=false),7000); }
+      else if (cat === 'top') document.getElementById('topGamesSection')?.scrollIntoView({behavior:'smooth',block:'start'});
+      playUiSound('confirm');
+    }));
+  }
+
   function renderFeatured() {
     if (!featuredRail) return;
     featuredRail.innerHTML = BUNDLED_GAMES.map((g) => `
@@ -745,8 +796,10 @@
     activeRomName = file.name;
     const title = bundledGame?.title || safeTitle(file.name);
 
+    rememberLibraryScroll();
     launcherView.hidden = true;
     playerView.hidden = false;
+    focusPlayerView('auto');
     $('#playingTitle').textContent = title;
     $('#playingCore').textContent = selectedCore === 'bsnes' ? 'bsnes • automático' : 'Snes9x • automático';
     if (prefs.core !== 'auto') $('#playingCore').textContent = selectedCore === 'bsnes' ? 'bsnes • manual' : 'Snes9x • manual';
@@ -797,6 +850,7 @@
     window.EJS_onExit = async () => { await window.SNESNova?.session?.stop?.('ejs-exit'); showLibrary(); };
     window.EJS_onGameStart = () => {
       document.title = `${title} • SNES Nova`;
+      focusPlayerView('smooth');
       window.SNESNova?.session?.started();
       if (prefs.gameProfiles) saveGameProfile(profileKey, { core: selectedCore, graphics: resolvedGraphics, aspect: prefs.aspect, filter: prefs.filter, overscan: prefs.overscan });
       const status = $('#runtimeVideoStatus');
@@ -829,8 +883,9 @@
     window.SNESNova?.session?.stop('library');
     playerView.hidden = true;
     launcherView.hidden = false;
-    document.title = 'SNES Nova 1.4.0';
+    document.title = 'SNES Nova 1.5.0';
     $('#game').innerHTML = '';
+    restoreLibraryScroll();
     // Full core teardown is owned by EmulatorJS exit button. Reload offers a guaranteed clean boot.
   }
 
@@ -871,7 +926,7 @@
   themeSelect?.addEventListener('change', () => applyTheme(themeSelect.value));
   $('#savePrefsBtn').addEventListener('click', () => { const prefs = savePrefs(); applyTheme(prefs.theme); playUiSound('confirm'); });
   $('#backBtn').addEventListener('click', showLibrary);
-  $('#libraryBtn').addEventListener('click', () => romInput.click());
+  $('#libraryBtn').addEventListener('click', () => document.getElementById('smartLibrarySection')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   $('#reloadBtn').addEventListener('click', () => location.reload());
   $('#fullscreenHostBtn').addEventListener('click', async () => {
     try {
@@ -945,6 +1000,8 @@
 
   applyPrefsToUi();
   updateCoreAdvice();
+  renderHomeShowcase();
+  setupCategories();
   renderFeatured();
   renderBundled();
   renderBrowsePreview(BUNDLED_GAMES[0]);

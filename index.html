@@ -4,22 +4,22 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0b1020" />
-  <meta name="description" content="SNES Nova 1.4.0 — emulador de Super Nintendo com visual premium, biblioteca local, Engine v1 e seleção inteligente entre Snes9x e bsnes." />
+  <meta name="description" content="SNES Nova 1.5.0 — emulador de Super Nintendo com visual premium, biblioteca local, Engine v1 e seleção inteligente entre Snes9x e bsnes." />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="assets/css/app.css?v=1.4.0" />
-  <title>SNES Nova 1.4.0</title>
+  <link rel="stylesheet" href="assets/css/app.css?v=1.5.0" />
+  <title>SNES Nova 1.5.0</title>
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
 </head>
 <body>
-  <div id="bootScreen" class="boot-screen"><img class="boot-logo-image" src="assets/branding/logo-mark.svg" alt="SNES Nova" /><img class="boot-wordmark" src="assets/branding/logo-full.svg" alt="SNES Nova" /><p id="bootStatus">Preparando biblioteca, trilha visual, runtime e controles…</p><div class="boot-progress"><i></i></div></div>
+  <div id="bootScreen" class="boot-screen"><img class="boot-logo-image boot-logo-modern" src="assets/branding/logo-full-modern.png" alt="SNES Nova" /><p id="bootStatus">Preparando biblioteca, trilha visual, runtime e controles…</p><div class="boot-progress"><i></i></div></div>
   <div class="app-shell">
     <header class="topbar">
       <div class="brand">
-        <img class="brand-logo" src="assets/branding/logo-mark.svg" alt="SNES Nova" />
+        <img class="brand-logo brand-logo-modern" src="assets/branding/logo-mark-modern.png" alt="SNES Nova" />
         <div class="brand-copy">
-          <strong>SNES Nova</strong>
-          <span>v1.4.0 • Achievements Hub • Engine V1</span>
+          <img class="brand-wordmark" src="assets/branding/logo-full-modern.png" alt="SNES Nova" />
+          <span>v1.5.0 • Console UI • Engine V1</span>
         </div>
       </div>
       <div class="top-actions">
@@ -33,7 +33,7 @@
     </header>
 
     <main>
-      <nav id="consoleNav" class="console-nav">
+      <nav id="consoleNav" class="console-nav"><div class="console-nav-brand"><img src="assets/branding/logo-mark-modern.png" alt="SNES Nova"><span>MENU</span></div>
         <button class="console-nav-btn active" data-target="launcherView">Início</button>
         <button class="console-nav-btn" data-target="featuredSection">Destaques</button>
         <button class="console-nav-btn" data-target="browsePreviewSection">Preview</button>
@@ -159,7 +159,23 @@
         </aside>
 
 
-        <section id="featuredSection" class="featured-rail-section">
+        <section id="homeShowcaseSection" class="home-showcase-section">
+          <div class="section-head"><div><p class="eyebrow">JOGAR AGORA</p><h2>Sua coleção em destaque</h2></div><small>capas grandes • acesso direto</small></div>
+          <div id="homeCoverWall" class="home-cover-wall"></div>
+        </section>
+
+        <section id="categorySection" class="category-section">
+          <div class="section-head"><div><p class="eyebrow">CATEGORIAS</p><h2>Explore a biblioteca</h2></div><small>atalhos visuais</small></div>
+          <div id="categoryGrid" class="category-grid">
+            <button class="category-card" data-category="installed"><span class="cat-icon">▣</span><strong>Instalados</strong><small>jogos prontos para abrir</small></button>
+            <button class="category-card" data-category="favorites"><span class="cat-icon">★</span><strong>Favoritos</strong><small>sua seleção pessoal</small></button>
+            <button class="category-card" data-category="beat"><span class="cat-icon">✊</span><strong>Beat em up</strong><small>ação direta</small></button>
+            <button class="category-card" data-category="special"><span class="cat-icon">◆</span><strong>Chips especiais</strong><small>Super FX e precisão</small></button>
+            <button class="category-card" data-category="top"><span class="cat-icon">🏆</span><strong>Top 10</strong><small>clássicos recomendados</small></button>
+          </div>
+        </section>
+
+<section id="featuredSection" class="featured-rail-section">
           <div class="section-head">
             <div><p class="eyebrow">DESTAQUES</p><h2>Seleção em destaque</h2></div>
             <small class="library-note">estilo console premium</small>
@@ -193,9 +209,9 @@
         </section>
       </section>
 
-      <section id="playerView" class="player-view" hidden>
+      <section id="playerView" class="player-view player-console-panel" hidden>
         <div class="player-head">
-          <button id="backBtn" class="ghost-btn">← Biblioteca</button>
+          <button id="backBtn" class="ghost-btn player-close-btn">← Fechar jogo</button>
           <div class="now-playing"><small>JOGANDO</small><strong id="playingTitle">—</strong><span id="playingCore">Core automático</span></div>
           <div class="player-tools">
             <button id="quickMenuBtn" class="primary-btn">Menu rápido</button><button id="mobileGameModeBtn" class="ghost-btn mobile-only-action" type="button">Modo jogo</button><button id="fullscreenHostBtn" class="ghost-btn">Tela cheia</button>
@@ -222,8 +238,8 @@
       </section>
       <footer class="app-footer">
         <div class="footer-brand">
-          <img src="assets/branding/logo-mark.svg" alt="SNES Nova" />
-          <div><strong>SNES Nova</strong><span>Engine v1 • Achievements Hub 1.4.0</span></div>
+          <img class="footer-logo-modern" src="assets/branding/logo-mark-modern.png" alt="SNES Nova" />
+          <div><img class="footer-wordmark" src="assets/branding/logo-full-modern.png" alt="SNES Nova" /><span>Engine v1 • Console UI 1.5.0</span></div>
         </div>
         <div class="footer-grid">
           <span>Biblioteca local</span><span>Core inteligente</span><span>PWA & offline</span><span>Mobile & TV</span>
@@ -262,7 +278,7 @@
       <label class="switch-row"><span>Sons de interface</span><input id="uiSoundToggle" type="checkbox" checked><i></i></label>
       <label class="field">Volume dos sons da interface <input id="uiSoundVolumeRange" type="range" min="0" max="1" step="0.05" value="0.35"></label>
       <div class="mobile-settings" id="mobileSettings">
-        <div class="panel-title"><span>Mobile</span><small>v1.4.0</small></div>
+        <div class="panel-title"><span>Mobile</span><small>v1.5.0</small></div>
         <label class="field">Perfil mobile<select id="mobileProfileSelect"><option value="auto">Automático</option><option value="battery">Economia de bateria</option><option value="balanced">Equilibrado</option><option value="quality">Qualidade</option></select></label>
         <label class="field">Tamanho dos controles<select id="touchScaleSelect"><option value="0.78">78%</option><option value="0.9">90%</option><option value="1">100%</option><option value="1.12">112%</option><option value="1.25">125%</option></select></label>
         <label class="field">Opacidade dos controles<input id="touchOpacityRange" type="range" min="0.3" max="1" step="0.05" value="0.72"></label>
@@ -275,29 +291,29 @@
     </form>
   </dialog>
 
-  <script src="assets/js/engine/workers/worker-manager.js?v=1.4.0"></script>
-  <script src="assets/js/engine/core/core-manager.js?v=1.4.0"></script>
-  <script src="assets/js/engine/performance/adaptive-engine.js?v=1.4.0"></script>
-  <script src="assets/js/engine/engine-manager.js?v=1.4.0"></script>
-  <script src="assets/js/engine/video/video-engine.js?v=1.4.0"></script>
-  <script src="assets/js/engine/video/gpu-presenter.js?v=1.4.0"></script>
-  <script src="assets/js/engine/audio/adaptive-audio.js?v=1.4.0"></script>
-  <script src="assets/js/engine/input/low-latency-input.js?v=1.4.0"></script>
-  <script src="assets/js/modules/logger.js?v=1.4.0"></script>
-  <script src="assets/js/modules/zip-reader.js?v=1.4.0"></script>
-  <script src="assets/js/modules/rom-analyzer.js?v=1.4.0"></script>
-  <script src="assets/js/modules/compatibility.js?v=1.4.0"></script>
-  <script src="assets/js/modules/session-manager.js?v=1.4.0"></script>
-  <script src="assets/js/modules/patches.js?v=1.4.0"></script>
-  <script src="assets/js/modules/diagnostics.js?v=1.4.0"></script>
-  <script src="assets/js/modules/enhancements.js?v=1.4.0"></script>
-  <script src="assets/js/modules/achievements.js?v=1.4.0"></script>
-  <script src="assets/js/engine/workers/offload.js?v=1.4.0"></script>
-  <script src="assets/js/app.js?v=1.4.0"></script>
-  <script src="assets/js/advanced.js?v=1.4.0"></script>
-  <script src="assets/js/v090.js?v=1.4.0"></script>
-  <script src="assets/js/v091.js?v=1.4.0"></script>
-  <script src="assets/js/v100.js?v=1.4.0"></script>
-  <script src="assets/js/v102.js?v=1.4.0"></script>
+  <script src="assets/js/engine/workers/worker-manager.js?v=1.5.0"></script>
+  <script src="assets/js/engine/core/core-manager.js?v=1.5.0"></script>
+  <script src="assets/js/engine/performance/adaptive-engine.js?v=1.5.0"></script>
+  <script src="assets/js/engine/engine-manager.js?v=1.5.0"></script>
+  <script src="assets/js/engine/video/video-engine.js?v=1.5.0"></script>
+  <script src="assets/js/engine/video/gpu-presenter.js?v=1.5.0"></script>
+  <script src="assets/js/engine/audio/adaptive-audio.js?v=1.5.0"></script>
+  <script src="assets/js/engine/input/low-latency-input.js?v=1.5.0"></script>
+  <script src="assets/js/modules/logger.js?v=1.5.0"></script>
+  <script src="assets/js/modules/zip-reader.js?v=1.5.0"></script>
+  <script src="assets/js/modules/rom-analyzer.js?v=1.5.0"></script>
+  <script src="assets/js/modules/compatibility.js?v=1.5.0"></script>
+  <script src="assets/js/modules/session-manager.js?v=1.5.0"></script>
+  <script src="assets/js/modules/patches.js?v=1.5.0"></script>
+  <script src="assets/js/modules/diagnostics.js?v=1.5.0"></script>
+  <script src="assets/js/modules/enhancements.js?v=1.5.0"></script>
+  <script src="assets/js/modules/achievements.js?v=1.5.0"></script>
+  <script src="assets/js/engine/workers/offload.js?v=1.5.0"></script>
+  <script src="assets/js/app.js?v=1.5.0"></script>
+  <script src="assets/js/advanced.js?v=1.5.0"></script>
+  <script src="assets/js/v090.js?v=1.5.0"></script>
+  <script src="assets/js/v091.js?v=1.5.0"></script>
+  <script src="assets/js/v100.js?v=1.5.0"></script>
+  <script src="assets/js/v102.js?v=1.5.0"></script>
 </body>
 </html>
