@@ -104,3 +104,8 @@ Em hardware forte, a opção **Pós-processamento WebGL2** pode espelhar o frame
 ### Atualização de desempenho (Etapa 3)
 
 Veja [ETAPA-3-DESEMPENHO.md](ETAPA-3-DESEMPENHO.md). A cadência do navegador não é o FPS interno de um jogo, e a leitura não desencadeia migração automática de core sem telemetria de execução verificada. Rode `bash tests/smoke.sh` para os testes estruturais, de compatibilidade e de desempenho sintético.
+
+
+## Etapa 4 — Telemetria de core
+
+A Etapa 4 adiciona medidas reais do tempo de boot e uma ponte opcional para contagem de frames/underruns originada em cores instrumentados. Nenhuma versão pública do Snes9x/bsnes presente neste pacote expõe esses contadores automaticamente. A interface marca FPS e underruns do core como **indisponíveis** sem o hook real. Veja [ETAPA-4-TELEMETRIA.md](ETAPA-4-TELEMETRIA.md) e `tests/core-telemetry.test.cjs`.

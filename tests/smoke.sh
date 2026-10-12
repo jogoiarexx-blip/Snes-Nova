@@ -28,3 +28,4 @@ print('smoke ok')
 PY2
 node tests/compatibility.test.cjs
 node tests/performance.test.cjs
+node tests/core-telemetry.test.cjs

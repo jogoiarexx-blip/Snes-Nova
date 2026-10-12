@@ -36,11 +36,15 @@
     if(!x||x.source!=='core'||!Number.isInteger(x.emulatedFrames)||x.emulatedFrames<120||
        !Number.isFinite(x.elapsedMs)||x.elapsedMs<1000||x.elapsedMs>120000||
        !Number.isFinite(x.targetHz)||![50,60].includes(x.targetHz))return null;
+    if(!Number.isSafeInteger(x.token)||x.token<1||!['snes9x','bsnes'].includes(x.core)||typeof x.hash!=='string'||!x.hash)return null;
     const emulationFps=1000*x.emulatedFrames/x.elapsedMs;
     if(emulationFps>250)return null;
-    return {metric:'emulation',source:'core',emulationMeasured:true,
+    const out={metric:'emulation',source:'core',emulationMeasured:true,
       emulationFps:round(emulationFps),targetHz:x.targetHz,core:x.core||'',hash:x.hash||'',
-      elapsedMs:x.elapsedMs,emulatedFrames:x.emulatedFrames};
+      elapsedMs:x.elapsedMs,emulatedFrames:x.emulatedFrames,token:x.token};
+    for(const field of ['coreMsP95','ppuMsP95','dspMsP95'])if(Number.isFinite(x[field])&&x[field]>=0&&x[field]<=1000)out[field]=round(x[field],2);
+    if(Number.isSafeInteger(x.audioUnderruns)&&x.audioUnderruns>=0)out.audioUnderruns=x.audioUnderruns;
+    return out;
   }
   return {summarize,emulationSample};
 });

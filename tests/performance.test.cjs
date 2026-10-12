@@ -16,8 +16,8 @@ function testMetrics(){
   const gaps=perf.summarize([...Array(99).fill(1000/60),50]);
   assert.ok(gaps.stutter>=1);assert.ok(gaps.onePercentLow<30);
   assert.equal(perf.summarize([12,16]),null);
-  assert.equal(perf.emulationSample({source:'requestAnimationFrame',emulatedFrames:180,elapsedMs:3000,targetHz:60}),null);
-  assert.equal(perf.emulationSample({source:'core',emulatedFrames:180,elapsedMs:3000,targetHz:60}).emulationFps,60);
+  assert.equal(perf.emulationSample({source:'requestAnimationFrame',emulatedFrames:180,elapsedMs:3000,targetHz:60,core:'bsnes',hash:'sha1',token:1}),null);
+  assert.equal(perf.emulationSample({source:'core',emulatedFrames:180,elapsedMs:3000,targetHz:60,core:'bsnes',hash:'sha1',token:1}).emulationFps,60);
   console.log('OK travadas e amostras de emulação autenticadas por origem');
 }
 function makeBrowser(){
@@ -50,9 +50,9 @@ async function testSessionAndLearning(){
   assert.ok(!b.events.some(e=>e.type==='snesnova:fallbacksuggested'));
   assert.equal(Object.keys(b.win.SNESNova.adaptiveEngine.get()).length,0);
   assert.equal(b.win.SNESNova.adaptiveEngine.resolveProfile('sha1','device-a','bsnes','high').core,'bsnes');
-  b.emit('snesnova:emulationmetrics',{source:'requestAnimationFrame',core:'bsnes',hash:'sha1',emulatedFrames:160,elapsedMs:4000,targetHz:60});
+  b.emit('snesnova:emulationmetrics',{source:'requestAnimationFrame',token:ss.snapshot().token,core:'bsnes',hash:'sha1',emulatedFrames:160,elapsedMs:4000,targetHz:60});
   assert.equal(Object.keys(b.win.SNESNova.adaptiveEngine.get()).length,0);
-  b.emit('snesnova:emulationmetrics',{source:'core',core:'bsnes',hash:'sha1',emulatedFrames:160,elapsedMs:4000,targetHz:60});
+  b.emit('snesnova:emulationmetrics',{source:'core',token:ss.snapshot().token,core:'bsnes',hash:'sha1',emulatedFrames:160,elapsedMs:4000,targetHz:60});
   assert.equal(b.win.SNESNova.adaptiveEngine.resolveProfile('sha1','device-a','bsnes','high').core,'snes9x');
   assert.equal(b.win.__SNESNovaLastEmulationPerf.emulationFps,40);
   b.doc.hidden=true;b.emit('document:visibilitychange');

@@ -21,3 +21,8 @@ Os binários Snes9x/bsnes continuam sendo os runtimes aprovados do projeto até 
 A medição de `requestAnimationFrame` descreve somente a regularidade dos callbacks de tela (50/60/90/120/144 Hz). **Não revela FPS do jogo nem garante velocidade normal de emulação.** Cores Snes9x/bsnes não acompanham este ZIP como binários locais completos e não expõem aqui um contador independente de frames emulados. As métricas de emulação ficam indisponíveis até que um core instrumentado forneça `snesnova:emulationmetrics` com `source: 'core'`, `emulatedFrames`, `elapsedMs`, `targetHz`, `core` e `hash`. O arquivo `performance-metrics.js` valida a amostra; nenhum valor é simulado.
 
 O segundo canvas WebGL2 é **desativado por padrão**, opcional quando ativado manualmente, limitado a 50/60 uploads por segundo e limpo ao encerrar. A reprodução do core continua sendo a referência; filtro no navegador custa processamento adicional. O seletor de áudio ainda não tem controle confirmado de buffers internos, por isso não afirma aplicar baixa latência ou corrigir underruns. Antes de publicar números de ganho, execute ensaios reais com builds do core e equipamentos específicos.
+
+
+## Etapa 4 — ponte de instrumentação
+
+Foi adicionada `assets/js/engine/performance/core-telemetry.js`, com medição de `EJS_ready`/`EJS_onGameStart`, identidade de sessão e callbacks opt-in de frames realmente emulados. **Sem integração explícita dentro dos cores, o frontend não obtém FPS nem underruns internos.** Veja `ETAPA-4-TELEMETRIA.md`.

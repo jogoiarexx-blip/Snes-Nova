@@ -771,7 +771,7 @@
     // Both the emulator and the library receive the normalized, hashed ROM, never the ZIP.
     file = romInfo.sourceFile;
     const profileKey = makeGameProfileKey(file, romInfo, bundledGame);
-    window.__SNESNovaRomRegion = romInfo?.analysis?.region || romInfo?.header?.region || '';
+    window.__SNESNovaRomRegion = romInfo?.region || ''; // analysis returns a flat region field
     const learnedProfile = prefs.gameProfiles ? getGameProfiles()[profileKey] : null;
     window.__SNESNovaBootPhase = 'consultar compatibilidade';
     const compatibility = window.SNESNova?.compatibility ? await window.SNESNova.compatibility.lookup(romInfo.analysis || romInfo) : null;
@@ -805,6 +805,9 @@
       smartDecision = {...smartDecision, core:selectedCore, reasons:[...(smartDecision.reasons||[]), 'perfil adaptativo por jogo + dispositivo']};
     }
     window.SNESNova?.session?.begin({title: bundledGame?.title || romInfo.header?.title || safeTitle(file.name), hash: romInfo.sha1 || romInfo.crc32 || profileKey, core:selectedCore});
+    const runningSession = window.SNESNova?.session?.snapshot?.();
+    const sessionToken = runningSession?.token;
+    window.SNESNova?.coreTelemetry?.start?.({token:sessionToken,core:selectedCore,hash:runningSession.hash,region:romInfo.region});
     addRecent(file);
     if (activeRomUrl) URL.revokeObjectURL(activeRomUrl);
     activeRomUrl = URL.createObjectURL(file);
@@ -863,6 +866,8 @@
     };
     window.EJS_onExit = () => { void showLibrary('ejs-exit'); };
     window.EJS_onGameStart = () => {
+      if (window.SNESNova?.session?.snapshot?.().token !== sessionToken || window.SNESNova?.session?.snapshot?.().state !== 'starting') return;
+      window.SNESNova?.coreTelemetry?.running?.(sessionToken);
       document.title = `${title} • SNES Nova`;
       focusPlayerView('smooth');
       window.SNESNova?.session?.started();
@@ -874,6 +879,8 @@
       }
     };
     window.EJS_ready = () => {
+      if (window.SNESNova?.session?.snapshot?.().token !== sessionToken || !['starting','running'].includes(window.SNESNova?.session?.snapshot?.().state)) return;
+      window.SNESNova?.coreTelemetry?.ready?.(sessionToken);
       // Reaplica nitidez no canvas criado pelo EmulatorJS sem depender de API interna.
       const canvas = $('#game canvas');
       if (canvas && (prefs.sharp || resolvedGraphics === 'pixel')) canvas.style.imageRendering = 'pixelated';

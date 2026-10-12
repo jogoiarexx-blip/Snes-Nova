@@ -73,7 +73,7 @@ function stop(reason='library'){
 window.addEventListener('snesnova:emulationmetrics',e=>{
   if(S.state!=='running')return;
   const detail=e.detail||{};
-  if(detail.core!==S.core||detail.hash!==S.hash)return;
+  if(detail.core!==S.core||detail.hash!==S.hash||detail.token!==S.token)return;
   const sample=window.SNESNovaPerformanceMetrics?.emulationSample(detail);
   if(sample){window.__SNESNovaLastEmulationPerf=sample;emit('coreperformance',sample)}
 });
