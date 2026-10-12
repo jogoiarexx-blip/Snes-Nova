@@ -99,3 +99,8 @@ Em hardware forte, a opção **Pós-processamento WebGL2** pode espelhar o frame
 - Scripts principais usam cache-busting `?v=1.5.0` para impedir que um Service Worker antigo esconda o novo jogo.
 - `app.js` e `advanced.js` passam a usar Network First no Service Worker.
 - Adicionado `data/installed-games.json` como manifesto explícito dos jogos embutidos.
+
+
+### Atualização de desempenho (Etapa 3)
+
+Veja [ETAPA-3-DESEMPENHO.md](ETAPA-3-DESEMPENHO.md). A cadência do navegador não é o FPS interno de um jogo, e a leitura não desencadeia migração automática de core sem telemetria de execução verificada. Rode `bash tests/smoke.sh` para os testes estruturais, de compatibilidade e de desempenho sintético.

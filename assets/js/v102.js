@@ -21,7 +21,20 @@ function syncTouchVisibility(){const host=$('#touchControls');if(!host)return;co
 async function gameMode(on=true){if(!isMobile())return;if(on){document.body.classList.add('mobile-game-mode');try{await document.documentElement.requestFullscreen?.()}catch{}try{await screen.orientation?.lock?.('landscape')}catch{}try{wakeLock=await navigator.wakeLock?.request?.('screen')}catch{}}else{document.body.classList.remove('mobile-game-mode');try{screen.orientation?.unlock?.()}catch{}try{if(document.fullscreenElement)await document.exitFullscreen()}catch{}try{await wakeLock?.release?.()}catch{}wakeLock=null}syncTouchVisibility()}
 function hint(){const n=$('#rotateNotice');if(!n||!cfg.landscapeHint||!isMobile()||$('#playerView')?.hidden||!isPortrait()||Date.now()-lastHint<120000){if(n)n.hidden=true;return}n.hidden=false;lastHint=Date.now()}
 function toast(text){let x=$('.mobile-perf-toast');if(!x){x=document.createElement('div');x.className='mobile-perf-toast';document.body.appendChild(x)}x.textContent=text;clearTimeout(x._t);x._t=setTimeout(()=>x.remove(),3500)}
-function thermalGuard(e){if(!cfg.thermalGuard||!isMobile())return;const d=e.detail||{},target=/PAL/i.test(window.__SNESNovaRomRegion||'')?49:58;const bad=(d.presentFps||60)<target||(d.stutter||0)>16;badSamples=bad?badSamples+1:Math.max(0,badSamples-1);if(badSamples<3)return;badSamples=0;localStorage.setItem('snes-nova:gpu-presenter','0');N.gpuPresenter?.stop?.();document.body.classList.add('mobile-battery');toast('Proteção mobile: reduzindo efeitos para estabilizar o jogo.');const core=N.session?.snapshot?.().core;if(core==='bsnes'&&$('#coreSelect')?.value==='auto')setTimeout(()=>$('#perfUseSnes9x')?.click(),250)}
+function thermalGuard(e){
+  if(!cfg.thermalGuard||!isMobile()||!N.gpuPresenter?.active?.())return;
+  const d=e.detail||{};
+  if(d.metric!=='display-cadence'||!d.sampleCount)return;
+  // Browser scheduling alone cannot determine whether bsnes is too slow.
+  const bad=d.stutter>18;
+  badSamples=bad?badSamples+1:Math.max(0,badSamples-1);
+  if(badSamples<3)return;
+  badSamples=0;
+  localStorage.setItem('snes-nova:gpu-presenter','0');
+  N.gpuPresenter?.stop?.();
+  const toggle=$('#gpuPresenterToggle');if(toggle)toggle.checked=false;
+  toast('Proteção mobile: desativado pós-processamento extra de vídeo.');
+}
 function setup(){if(!isMobile()){$('#mobileSettings')?.setAttribute('hidden','');return}bindSettings();robustTouch();applyVisuals();$('#mobileGameModeBtn')?.addEventListener('click',()=>gameMode(true));$('#enterMobileGameMode')?.addEventListener('click',()=>{ $('#rotateNotice').hidden=true;gameMode(true)});$('#dismissRotateNotice')?.addEventListener('click',()=>{$('#rotateNotice').hidden=true;lastHint=Date.now()});addEventListener('gamepadconnected',syncTouchVisibility);addEventListener('gamepaddisconnected',syncTouchVisibility);addEventListener('resize',()=>{syncTouchVisibility();hint()});addEventListener('orientationchange',()=>setTimeout(()=>{syncTouchVisibility();hint()},250));document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&document.body.classList.contains('mobile-game-mode'))gameMode(false)});new MutationObserver(()=>{syncTouchVisibility();setTimeout(hint,500)}).observe($('#playerView'),{attributes:true,attributeFilter:['hidden']});window.addEventListener('snesnova:performance',thermalGuard);window.addEventListener('snesnova:sessionstart',()=>{applyVisuals();setTimeout(hint,700)});window.addEventListener('snesnova:sessionend',()=>gameMode(false));setInterval(syncTouchVisibility,1800)}
 N.mobile={version:'1.5.0',isMobile,resolvedProfile,resolveCore,resolveGraphics,gameMode,config:()=>({...cfg})};
 if(document.readyState==='loading')addEventListener('DOMContentLoaded',setup);else setup();

@@ -7,7 +7,7 @@
   <meta name="description" content="SNES Nova 1.5.0 — emulador de Super Nintendo com visual premium, biblioteca local, Engine v1 e seleção inteligente entre Snes9x e bsnes." />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="assets/css/app.css?v=1.5.0" />
+  <link rel="stylesheet" href="assets/css/app.css?v=1.5.0-etapa3" />
   <title>SNES Nova 1.5.0</title>
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
 </head>
@@ -219,7 +219,7 @@
           </div>
         </div>
         <div class="perf-warning" id="perfWarning" hidden><span>O bsnes apresentou instabilidade nesta sessão.</span><button id="perfUseSnes9x" class="secondary-btn compact">Trocar para Snes9x</button></div><div class="video-toolbar">
-          <span id="runtimeVideoStatus">Vídeo automático</span><span id="sessionPerf" class="perf-pill">Sessão: aguardando dados</span>
+          <span id="runtimeVideoStatus">Vídeo automático</span><span id="sessionPerf" class="perf-pill">Tela: aguardando cadência (não é FPS do jogo)</span>
           <div>
             <button class="mini-btn" data-scale="2">2×</button>
             <button class="mini-btn" data-scale="3">3×</button>
@@ -291,29 +291,30 @@
     </form>
   </dialog>
 
-  <script src="assets/js/engine/workers/worker-manager.js?v=1.5.0"></script>
-  <script src="assets/js/engine/core/core-manager.js?v=1.5.0"></script>
-  <script src="assets/js/engine/performance/adaptive-engine.js?v=1.5.0"></script>
-  <script src="assets/js/engine/engine-manager.js?v=1.5.0"></script>
-  <script src="assets/js/engine/video/video-engine.js?v=1.5.0"></script>
-  <script src="assets/js/engine/video/gpu-presenter.js?v=1.5.0"></script>
-  <script src="assets/js/engine/audio/adaptive-audio.js?v=1.5.0"></script>
-  <script src="assets/js/engine/input/low-latency-input.js?v=1.5.0"></script>
-  <script src="assets/js/modules/logger.js?v=1.5.0"></script>
-  <script src="assets/js/modules/zip-reader.js?v=1.5.0"></script>
-  <script src="assets/js/modules/rom-analyzer.js?v=1.5.0"></script>
-  <script src="assets/js/modules/compatibility.js?v=1.5.0"></script>
-  <script src="assets/js/modules/session-manager.js?v=1.5.0"></script>
-  <script src="assets/js/modules/patches.js?v=1.5.0"></script>
-  <script src="assets/js/modules/diagnostics.js?v=1.5.0"></script>
-  <script src="assets/js/modules/enhancements.js?v=1.5.0"></script>
-  <script src="assets/js/modules/achievements.js?v=1.5.0"></script>
-  <script src="assets/js/engine/workers/offload.js?v=1.5.0"></script>
-  <script src="assets/js/app.js?v=1.5.0"></script>
-  <script src="assets/js/advanced.js?v=1.5.0"></script>
-  <script src="assets/js/v090.js?v=1.5.0"></script>
-  <script src="assets/js/v091.js?v=1.5.0"></script>
-  <script src="assets/js/v100.js?v=1.5.0"></script>
-  <script src="assets/js/v102.js?v=1.5.0"></script>
+  <script src="assets/js/engine/workers/worker-manager.js?v=1.5.0-etapa3"></script>
+  <script src="assets/js/engine/core/core-manager.js?v=1.5.0-etapa3"></script>
+  <script src="assets/js/engine/performance/adaptive-engine.js?v=1.5.0-etapa3"></script>
+  <script src="assets/js/engine/engine-manager.js?v=1.5.0-etapa3"></script>
+  <script src="assets/js/engine/video/video-engine.js?v=1.5.0-etapa3"></script>
+  <script src="assets/js/engine/video/gpu-presenter.js?v=1.5.0-etapa3"></script>
+  <script src="assets/js/engine/audio/adaptive-audio.js?v=1.5.0-etapa3"></script>
+  <script src="assets/js/engine/input/low-latency-input.js?v=1.5.0-etapa3"></script>
+  <script src="assets/js/modules/logger.js?v=1.5.0-etapa3"></script>
+  <script src="assets/js/modules/zip-reader.js?v=1.5.0-etapa3"></script>
+  <script src="assets/js/modules/rom-analyzer.js?v=1.5.0-etapa3"></script>
+  <script src="assets/js/modules/compatibility.js?v=1.5.0-etapa3"></script>
+  <script src="assets/js/engine/performance/performance-metrics.js?v=1.5.0-etapa3"></script>
+  <script src="assets/js/modules/session-manager.js?v=1.5.0-etapa3"></script>
+  <script src="assets/js/modules/patches.js?v=1.5.0-etapa3"></script>
+  <script src="assets/js/modules/diagnostics.js?v=1.5.0-etapa3"></script>
+  <script src="assets/js/modules/enhancements.js?v=1.5.0-etapa3"></script>
+  <script src="assets/js/modules/achievements.js?v=1.5.0-etapa3"></script>
+  <script src="assets/js/engine/workers/offload.js?v=1.5.0-etapa3"></script>
+  <script src="assets/js/app.js?v=1.5.0-etapa3"></script>
+  <script src="assets/js/advanced.js?v=1.5.0-etapa3"></script>
+  <script src="assets/js/v090.js?v=1.5.0-etapa3"></script>
+  <script src="assets/js/v091.js?v=1.5.0-etapa3"></script>
+  <script src="assets/js/v100.js?v=1.5.0-etapa3"></script>
+  <script src="assets/js/v102.js?v=1.5.0-etapa3"></script>
 </body>
 </html>

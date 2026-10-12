@@ -26,3 +26,5 @@ assert (r/'ENGINE.md').exists()
 assert (r/'scripts/core-build/build-custom-cores.sh').exists()
 print('smoke ok')
 PY2
+node tests/compatibility.test.cjs
+node tests/performance.test.cjs
